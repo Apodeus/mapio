@@ -23,34 +23,37 @@ typedef struct s_map_case* map_case;
 
 void map_new (unsigned width, unsigned height)
 {
-  map_allocate (width, height);
+	map_allocate (width, height);
 
-  for (int x = 0; x < width; x++)
-    map_set (x, height - 1, 0); // Ground
+	for (int x = 0; x < width; x++)
+		map_set (x, height - 1, 0); // Ground
 
-  for (int y = 0; y < height - 1; y++) {
-    map_set (0, y, 1); // Wall
-    map_set (width - 1, y, 1); // Wall
-  }
+	for (int y = 0; y < height - 1; y++) {
+		map_set (0, y, 1); // Wall
+		map_set (width - 1, y, 1); // Wall
+	}
 
-  map_object_begin (4);
+	map_object_begin (6);
 
-  // Texture pour le sol
-  map_object_add ("images/ground.png", 1, MAP_OBJECT_SOLID);
-  // Mur
-  map_object_add ("images/wall.png", 1, MAP_OBJECT_SOLID);
-  // Gazon
-  map_object_add ("images/grass.png", 1, MAP_OBJECT_SEMI_SOLID);
-  // Marbre
-  map_object_add ("images/marble.png", 1, MAP_OBJECT_SOLID | MAP_OBJECT_DESTRUCTIBLE);
-
-  map_object_end ();
+	// Texture pour le sol
+	map_object_add ("images/ground.png", 1, MAP_OBJECT_SOLID);
+	// Mur
+	map_object_add ("images/wall.png", 1, MAP_OBJECT_SOLID);
+	// Gazon
+	map_object_add ("images/grass.png", 1, MAP_OBJECT_SEMI_SOLID);
+	// Marbre
+	map_object_add ("images/marble.png", 1, MAP_OBJECT_SOLID | MAP_OBJECT_DESTRUCTIBLE);
+	//Fleurs
+	map_object_add("images/flower.png", 1, MAP_OBJECT_AIR | MAP_OBJECT_COLLECTIBLE);
+	//Pieces
+	map_object_add("images/coin.png", 20, MAP_OBJECT_AIR | MAP_OBJECT_COLLECTIBLE);
+	map_object_end ();
 
 }
 
 void map_save (char *filename)
 {
-  // TODO
+	// TODO
   FILE* f = fopen(filename, "w");
   int num_items = map_objects();
   fprintf(f, "%d\n", num_items);
@@ -86,13 +89,13 @@ void map_save (char *filename)
 
 
   fclose(f);
-  fprintf (stderr, "Sorry: Map save is not yet implemented\n");
+	fprintf (stderr, "Sorry: Map save is not yet implemented\n");
 }
 
 void map_load (char *filename)
 {
-  // TODO
-  exit_with_error ("Map load is not yet implemented\n");
+	// TODO
+	exit_with_error ("Map load is not yet implemented\n");
 }
 
 #endif
