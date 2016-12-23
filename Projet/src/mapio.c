@@ -11,11 +11,11 @@
 
 struct s_map_case
 {
-  int x;
-  int y;
-  int type;
+	int x;
+	int y;
+	int type;
 
-  struct s_map_case* next;
+	struct s_map_case* next;
 };
 
 typedef struct s_map_case* map_case;
@@ -54,56 +54,62 @@ void map_new (unsigned width, unsigned height)
 void map_save (char *filename)
 {
 	// TODO
-  FILE* f = fopen(filename, "w");
-  int num_items = map_objects();
-  int w = map_width();
-  int h = map_height();
-  map_case prev = NULL;
-  map_case first = NULL;
-  fprintf(f, "%d %d\n", w, h);
-  for (int i = 0; i < w; i++)
-    for (int j = 0; j < h; j++)
-    {
-      int o = map_get(i, j);
-      if (o != MAP_OBJECT_NONE)
-      {
-        map_case m = (map_case)malloc(sizeof(struct s_map_case));
-        m->x = i;
-        m->y = j;
-        m->type = o;
-        m->next = NULL;
+	FILE* f = fopen(filename, "w");
+	//Nombre d'objet
+	int num_items = map_objects();
+	//Largeur x Hauteur
+	int width = map_width();
+	int height = map_height();
 
-        if (first == NULL)
-          first = m;
-        else
-          prev->next = m;
-        prev = m;
-      }
-    }
+	map_case prev = NULL;
+	map_case first = NULL;
 
-  map_case m = first->next;
-  while (m != NULL)
-    {
-      first = m;
-      fprintf(f, "%d %d %d\n", first->x, first->y, first->type);
-      m = first->next;
-      free(first);
-    }
+	fprintf(f, "%d %d\n", width, height);
 
-  fprintf(f, "%d\n", num_items);
-  for (int i = 0; i < num_items; i++)
-  {
-    char* path = map_get_name(i);
-    int len = strlen(path);
-    int frames_num = map_get_frames(i);
-    int solid = map_get_solidity(i);
-    int dest = map_is_destructible(i);
-    int coll = map_is_collectible(i);
-    int gen = map_is_generator(i);
-    fprintf(f, "%d %s %d %d %d %d %d\n", len, path, frames_num, solid, dest, coll, gen);
-  }
+	for (int i = 0; i < width; i++)
+		for (int j = 0; j < height; j++)
+		{
+			int object = map_get(i, j);
+			if (object != MAP_OBJECT_NONE)
+			{
+				map_case m_case = (map_case)malloc(sizeof(struct s_map_case));
+				m_case->x = i;
+				m_case->y = j;
+				m_case->type = object;
+				m_case->next = NULL;
 
-  fclose(f);
+				if (first == NULL)
+					first = m_case;
+				else
+					prev->next = m_case;
+				prev = m_case;
+			}
+		}
+
+	map_case m_case = first->next;
+	while (m_case != NULL)
+		{
+			first = m_case;
+			fprintf(f, "%d %d %d\n", first->x, first->y, first->type);
+			m_case = first->next;
+			free(first);
+		}
+
+	fprintf(f, "%d\n", num_items);
+
+	for (int i = 0; i < num_items; i++)
+	{
+		char* path = map_get_name(i);
+		int len = strlen(path);
+		int frames_num = map_get_frames(i);
+		int solid = map_get_solidity(i);
+		int dest = map_is_destructible(i);
+		int coll = map_is_collectible(i);
+		int gen = map_is_generator(i);
+		fprintf(f, "%d %s %d %d %d %d %d\n", len, path, frames_num, solid, dest, coll, gen);
+	}
+
+	fclose(f);
 	fprintf (stderr, "Map saved at %s\n", filename);
 }
 
