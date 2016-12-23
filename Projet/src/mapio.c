@@ -81,10 +81,13 @@ void map_save (char *filename)
       }
     }
 
-  while (first->next != NULL)
+  map_case m = first->next;
+  while (m != NULL)
     {
+      first = m;
       fprintf(f, "%d %d %d\n", first->x, first->y, first->type);
-      first = first->next;
+      m = first->next;
+      free(first);
     }
 
   fprintf(f, "%d\n", num_items);
