@@ -59,7 +59,7 @@ void map_save (char *filename)
   int w = map_width();
   int h = map_height();
   map_case prev = NULL;
-  map_case first = prev;
+  map_case first = NULL;
   fprintf(f, "%d %d\n", w, h);
   for (int i = 0; i < w; i++)
     for (int j = 0; j < h; j++)
@@ -71,8 +71,9 @@ void map_save (char *filename)
         m->x = i;
         m->y = j;
         m->type = o;
+        m->next = NULL;
 
-        if (prev == NULL)
+        if (first == NULL)
           first = m;
         else
           prev->next = m;
@@ -100,7 +101,7 @@ void map_save (char *filename)
   }
 
   fclose(f);
-	fprintf (stderr, "Sorry: Map save is not yet implemented\n");
+	fprintf (stderr, "Map saved at %s\n", filename);
 }
 
 void map_load (char *filename)
