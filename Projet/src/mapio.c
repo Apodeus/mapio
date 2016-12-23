@@ -56,12 +56,11 @@ void map_save (char *filename)
 	// TODO
   FILE* f = fopen(filename, "w");
   int num_items = map_objects();
-  fprintf(f, "%d\n", num_items);
   int w = map_width();
   int h = map_height();
   map_case prev = NULL;
   map_case first = prev;
-  map_case very_first = first;
+  fprintf(f, "%d %d\n", w, h);
   for (int i = 0; i < w; i++)
     for (int j = 0; j < h; j++)
     {
@@ -87,6 +86,18 @@ void map_save (char *filename)
       first = first->next;
     }
 
+  fprintf(f, "%d\n", num_items);
+  for (int i = 0; i < num_items; i++)
+  {
+    char* path = map_get_name(i);
+    int len = strlen(path);
+    int frames_num = map_get_frames(i);
+    int solid = map_get_solidity(i);
+    int dest = map_is_destructible(i);
+    int coll = map_is_collectible(i);
+    int gen = map_is_generator(i);
+    fprintf(f, "%d %s %d %d %d %d %d\n", len, path, frames_num, solid, dest, coll, gen);
+  }
 
   fclose(f);
 	fprintf (stderr, "Sorry: Map save is not yet implemented\n");

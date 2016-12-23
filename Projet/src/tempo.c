@@ -1,4 +1,4 @@
-#include <SDL/SDL.h>
+#include <SDL.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
