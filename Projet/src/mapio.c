@@ -173,7 +173,8 @@ void map_load (char *filename)
 	int width, height;
 
 	//fread(buffer, buff_size, 1, file_save) > 1
-	fgets ( buffer, sizeof(buffer), file_save);
+	if(fgets ( buffer, sizeof(buffer), file_save) == NULL)
+		exit(EXIT_FAILURE);
 
 	//on récupère la longueur
 	tokken = strtok(buffer, delim);
@@ -184,7 +185,9 @@ void map_load (char *filename)
 
 	map_allocate (width, height);
 	
-	fgets ( buffer, sizeof(buffer), file_save);
+	if(fgets ( buffer, sizeof(buffer), file_save) == NULL)
+		exit(EXIT_FAILURE);
+
 	tokken = strtok(buffer, delim);
 
 	int nb_objects = atoi(tokken);
@@ -192,7 +195,8 @@ void map_load (char *filename)
 	//On récupère les coordonnées des éléments et leur ID pour les remettre sur la map
 	for(int n = 0; n < nb_objects ; n++){
 
-		fgets(buffer, sizeof(buffer), file_save);
+		if(fgets(buffer, sizeof(buffer), file_save) == NULL)
+			exit(EXIT_FAILURE);
 
 		tokken = strtok(buffer, delim);
 		// printf("x : %s ", tokken);
@@ -211,7 +215,9 @@ void map_load (char *filename)
 	}
 
 	//On récupère le nombre d'élément différent
-	fgets(buffer, sizeof(buffer), file_save);
+	if(fgets(buffer, sizeof(buffer), file_save) == NULL )
+		exit(EXIT_FAILURE);
+	
 	int nb_elem = atoi(buffer);
 
 	map_object_begin(nb_elem);
