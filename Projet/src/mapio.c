@@ -47,6 +47,7 @@ void map_new (unsigned width, unsigned height)
 	map_object_add("images/flower.png", 1, MAP_OBJECT_AIR | MAP_OBJECT_COLLECTIBLE);
 	//Pieces
 	map_object_add("images/coin.png", 20, MAP_OBJECT_AIR | MAP_OBJECT_COLLECTIBLE);
+
 	map_object_end ();
 
 }
@@ -61,17 +62,22 @@ void map_save (char *filename)
 	int width = map_width();
 	int height = map_height();
 
+	int nb_objects = 0;
+
 	map_case prev = NULL;
 	map_case first = NULL;
 
 	fprintf(f, "%d %d\n", width, height);
 
 	for (int i = 0; i < width; i++)
+	{
 		for (int j = 0; j < height; j++)
 		{
 			int object = map_get(i, j);
 			if (object != MAP_OBJECT_NONE)
 			{
+				nb_objects++;
+
 				map_case m_case = (map_case)malloc(sizeof(struct s_map_case));
 				m_case->x = i;
 				m_case->y = j;
@@ -85,15 +91,18 @@ void map_save (char *filename)
 				prev = m_case;
 			}
 		}
+	}
+	fprintf(f, "%d\n", nb_objects);
 
-	map_case m_case = first->next;
+	map_case m_case = first;
 	while (m_case != NULL)
-		{
-			first = m_case;
-			fprintf(f, "%d %d %d\n", first->x, first->y, first->type);
-			m_case = first->next;
-			free(first);
-		}
+	{
+		first = m_case;
+		fprintf(f, "%d %d %d\n", first->x, first->y, first->type);
+
+		m_case = first->next;
+		free(first);
+	}
 
 	fprintf(f, "%d\n", num_items);
 
@@ -113,10 +122,132 @@ void map_save (char *filename)
 	fprintf (stderr, "Map saved at %s\n", filename);
 }
 
+int isNumber(char c){
+	return ((c - 48) >= 0 ) && ((c - 48) < 10);
+}
+
+int isSolid(int s){
+	switch(s){
+		case 0:
+			return 0;
+		case 1:
+			return 1;
+		case 2:
+			return 2;
+		default:
+			return 0;
+	}
+
+}
+
+int isDestructible(int d){
+	if(d == 0)
+		return 0;
+	return 4;
+
+}
+
+int isCollectible(int c){
+	if(c == 0)
+		return 0;
+	return 8;
+}
+
+int isGenerator(int g){
+	if(g == 0)
+		return 0;
+	return 16;
+}
+
 void map_load (char *filename)
 {
 	// TODO
-	exit_with_error ("Map load is not yet implemented\n");
+	FILE* file_save = fopen(filename, "r");
+
+	int buff_size = 128;
+	char delim[2] = " ";
+	char buffer[buff_size];
+	char* tokken;
+	int x, y, id;
+
+	int width, height;
+
+	//fread(buffer, buff_size, 1, file_save) > 1
+	fgets ( buffer, sizeof(buffer), file_save);
+
+	//on récupère la longueur
+	tokken = strtok(buffer, delim);
+	width = atoi(tokken);
+	//on recupere la hauteur
+	tokken = strtok(NULL, delim);
+	height = atoi(tokken);
+
+	map_allocate (width, height);
+	
+	fgets ( buffer, sizeof(buffer), file_save);
+	tokken = strtok(buffer, delim);
+
+	int nb_objects = atoi(tokken);
+
+	//On récupère les coordonnées des éléments et leur ID pour les remettre sur la map
+	for(int n = 0; n < nb_objects ; n++){
+
+		fgets(buffer, sizeof(buffer), file_save);
+
+		tokken = strtok(buffer, delim);
+		// printf("x : %s ", tokken);
+		x = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		// printf("y : %s ", tokken);
+		y = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		// printf("id : %s\n", tokken);
+		id = atoi(tokken);
+		
+		map_set(x, y, id);
+
+	}
+
+	//On récupère le nombre d'élément différent
+	fgets(buffer, sizeof(buffer), file_save);
+	int nb_elem = atoi(buffer);
+
+	map_object_begin(nb_elem);
+
+
+	//Les propriétés des éléments sont stockées de la manière suivante sur une ligne
+	// len_chemin chemin_image nb_frames solide destruct coll gener
+	while(fgets ( buffer, sizeof(buffer), file_save ) != NULL ){
+		tokken = strtok(buffer, delim);
+
+		char path[ atoi(tokken) ];
+		tokken = strtok(NULL, delim);	
+		strcpy(path, tokken);
+
+		tokken = strtok(NULL, delim);
+		int nb_frames, solid, destruct, coll, gener;
+		nb_frames = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		solid = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		destruct = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		coll = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		gener = atoi(tokken);
+
+		map_object_add(path, nb_frames, isSolid(solid) | isDestructible(destruct) | isCollectible(coll) | isGenerator(gener));
+	}
+
+	map_object_end();
+
+	//exit_with_error ("Map load is not yet implemented\n");
 }
 
 #endif
