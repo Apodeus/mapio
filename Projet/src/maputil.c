@@ -26,13 +26,41 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	FILE* f = fopen(argv[1], "r");
-	if (f == NULL)
+	int f = open(argv[1], O_RDONLY);
+	if (f == -1)
 	{
 		fprintf(stderr, "%s %s %s\n", "File", argv[1], "does not exist.");
 		return 1;
 	}
 
-	fclose(f);
+	if (!getwidth || !getheight)
+	{
+		char c = 'a';
+		int width = 0;
+		int height = 0;
+
+		read(f, &c, sizeof(char));
+
+		while (c != ' ')
+		{
+			width = width * 10 + c - ' ';
+			read(f, &c, sizeof(char));
+		}
+
+		read(f, &c, sizeof(char));
+		while (c != '\n')
+		{
+			read(f, &c, sizeof(char));
+			height = height * 10 + c - ' ';
+		}
+
+		if (!getwidth)
+			printf("Width : %d\n", width);
+		if (!getheight)
+			printf("Height : %d\n", height);
+			
+	}
+
+	close(f);
 	return 0;
 }
