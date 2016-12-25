@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 
 		while (c != ' ')
 		{
-			width = width * 10 + c - ' ';
+			width = width * 10 + c - '0';
 			read(f, &c, sizeof(char));
 		}
 
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 		while (c != '\n')
 		{
 			read(f, &c, sizeof(char));
-			height = height * 10 + c - ' ';
+			height = height * 10 + c - '0';
 		}
 
 		if (!getwidth)
