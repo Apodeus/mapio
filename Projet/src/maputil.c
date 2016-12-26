@@ -102,7 +102,7 @@ void pruneobjects(char* filename){
 		new_nb_object += checkingObjects[i];
 	}
 
-	sprintf(buffer, "%d\n\0", new_nb_object);
+	sprintf(buffer, "%d\n", new_nb_object);
 
 	fputs(buffer, new_file);
 

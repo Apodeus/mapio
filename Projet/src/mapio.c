@@ -160,6 +160,8 @@ int isGenerator(int g){
 void map_load (char *filename)
 {
 	// TODO
+	printf("debut load\n");
+
 	FILE* file_save = fopen(filename, "r");
 	if(file_save == NULL){
 		perror("Error opening file");
@@ -186,7 +188,8 @@ void map_load (char *filename)
 	height = atoi(tokken);
 
 	map_allocate (width, height);
-	
+	printf("Map alloué\n");
+
 	if(fgets ( buffer, buff_size, file_save) == NULL)
 		exit(EXIT_FAILURE);
 
@@ -215,15 +218,17 @@ void map_load (char *filename)
 		map_set(x, y, id);
 
 	}
+	printf("Coord recup DONE\n");
 
 	//On récupère le nombre d'élément différent
 	if(fgets(buffer, buff_size, file_save) == NULL )
 		exit(EXIT_FAILURE);
 	
 	int nb_elem = atoi(buffer);
+	printf("nb elem DONE\n");
 
 	map_object_begin(nb_elem);
-
+	printf("map_object_begin\n");
 
 	//Les propriétés des éléments sont stockées de la manière suivante sur une ligne
 	// len_chemin chemin_image nb_frames solide destruct coll gener
@@ -254,6 +259,7 @@ void map_load (char *filename)
 	}
 
 	map_object_end();
+	printf("map object end DONE\n");
 	fclose(file_save);
 
 	//exit_with_error ("Map load is not yet implemented\n");
