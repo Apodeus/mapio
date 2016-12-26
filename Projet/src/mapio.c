@@ -127,13 +127,13 @@ int isNumber(char c){
 int isSolid(int s){
 	switch(s){
 		case 0:
-			return 0;
+			return MAP_OBJECT_AIR;
 		case 1:
-			return 1;
+			return MAP_OBJECT_SEMI_SOLID;
 		case 2:
-			return 2;
+			return 	MAP_OBJECT_SOLID;
 		default:
-			return 0;
+			return MAP_OBJECT_AIR;
 	}
 
 }
@@ -141,20 +141,20 @@ int isSolid(int s){
 int isDestructible(int d){
 	if(d == 0)
 		return 0;
-	return 4;
+	return MAP_OBJECT_DESTRUCTIBLE;
 
 }
 
 int isCollectible(int c){
 	if(c == 0)
 		return 0;
-	return 8;
+	return MAP_OBJECT_COLLECTIBLE;
 }
 
 int isGenerator(int g){
 	if(g == 0)
 		return 0;
-	return 16;
+	return MAP_OBJECT_GENERATOR;
 }
 
 void map_load (char *filename)
