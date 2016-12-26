@@ -161,6 +161,10 @@ void map_load (char *filename)
 {
 	// TODO
 	FILE* file_save = fopen(filename, "r");
+	if(file_save == NULL){
+		perror("Error opening file");
+		exit(EXIT_FAILURE);
+	}
 
 	int buff_size = 128;
 	char delim[2] = " ";
@@ -171,7 +175,7 @@ void map_load (char *filename)
 	int width, height;
 
 	//fread(buffer, buff_size, 1, file_save) > 1
-	if(fgets ( buffer, sizeof(buffer), file_save) == NULL)
+	if(fgets ( buffer, buff_size, file_save) == NULL)
 		exit(EXIT_FAILURE);
 
 	//on récupère la longueur
@@ -183,7 +187,7 @@ void map_load (char *filename)
 
 	map_allocate (width, height);
 	
-	if(fgets ( buffer, sizeof(buffer), file_save) == NULL)
+	if(fgets ( buffer, buff_size, file_save) == NULL)
 		exit(EXIT_FAILURE);
 
 	tokken = strtok(buffer, delim);
@@ -193,7 +197,7 @@ void map_load (char *filename)
 	//On récupère les coordonnées des éléments et leur ID pour les remettre sur la map
 	for(int n = 0; n < nb_objects ; n++){
 
-		if(fgets(buffer, sizeof(buffer), file_save) == NULL)
+		if(fgets(buffer, buff_size, file_save) == NULL)
 			exit(EXIT_FAILURE);
 
 		tokken = strtok(buffer, delim);
@@ -213,7 +217,7 @@ void map_load (char *filename)
 	}
 
 	//On récupère le nombre d'élément différent
-	if(fgets(buffer, sizeof(buffer), file_save) == NULL )
+	if(fgets(buffer, buff_size, file_save) == NULL )
 		exit(EXIT_FAILURE);
 	
 	int nb_elem = atoi(buffer);
@@ -223,7 +227,7 @@ void map_load (char *filename)
 
 	//Les propriétés des éléments sont stockées de la manière suivante sur une ligne
 	// len_chemin chemin_image nb_frames solide destruct coll gener
-	while(fgets ( buffer, sizeof(buffer), file_save ) != NULL ){
+	while(fgets ( buffer, buff_size, file_save ) != NULL ){
 		tokken = strtok(buffer, delim);
 
 		char path[ atoi(tokken) ];
@@ -250,6 +254,7 @@ void map_load (char *filename)
 	}
 
 	map_object_end();
+	fclose(file_save);
 
 	//exit_with_error ("Map load is not yet implemented\n");
 }

@@ -37,6 +37,86 @@ int read_digit(int file_id)
 	return c - '0';
 }
 
+void pruneobjects(char* filename){
+	FILE* file = fopen(filename, "r+");
+
+	int buff_size = 128;
+	char buffer[buff_size];
+
+	char* tokken;
+	char delim[2] = " ";
+
+	char tmp_filename[4] = "tmp";
+	//Le nombre de ligne à sauter pour acceder aux elements voulu..
+	int header = 1;
+
+	//On recupere le nombre d'element sur la map
+	for(int i = 0; i < header + 1; i++)
+		fgets(buffer, buff_size, file);
+
+	int nb_elem = atoi(buffer);
+
+	//On Saut les N element de la map pour acceder au nombre d'objet initialisé
+	for(int i = 0; i <= nb_elem; i ++)
+		fgets(buffer, buff_size, file);
+
+	int nb_object = atoi(buffer);
+
+	//On crée un tableau de taile N objet initialisé rempli par défaut avec des 0
+	int checkingObjects[nb_object];
+
+	for(int i = 0; i < nb_object; i++)
+		checkingObjects[i] = 0;
+
+	//DEBUT REECRITURE
+	FILE* new_file = fopen("tmp", "w");
+	//On se replace au début du fichier puis à la position ou se situe les coordonnées
+	fseek( file, 0, SEEK_SET );
+
+	for(int i = 0; i < header + 1; i++)
+	{
+		fgets(buffer, buff_size, file);
+		fputs(buffer, new_file);
+	}
+
+	//On recupere les ID des elements présents, et on met à 1 quand il est présent.
+	for(int i = 0; i < nb_elem; i++){
+		fgets(buffer, buff_size, file);
+		fputs(buffer, new_file);
+		tokken = strtok(buffer, delim);
+		tokken = strtok(NULL, delim);
+		tokken = strtok(NULL, delim);
+
+		int id = atoi(tokken);
+
+		checkingObjects[id] = 1;
+	}
+
+	fgets(buffer, buff_size, file);
+
+	nb_object = 0;
+	for(int i = 0; i < nb_object; i++)
+		nb_object += checkingObjects[i];
+
+	sprintf(buffer, "%d\0", nb_object);
+
+	fputs(buffer, new_file);
+
+
+	for(int i = 0; i < nb_object; i++){
+		fgets(buffer, buff_size, file);
+		if(checkingObjects[i] == 1)
+			fputs(buffer, new_file);
+	}
+
+	fclose(file);
+	fclose(new_file);
+	
+	remove(filename);
+	rename(tmp_filename, filename);
+
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc % 6 != 3 && argc % 6 != 4)
