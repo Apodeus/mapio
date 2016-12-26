@@ -4,6 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct s_map_case
+{
+	int x;
+	int y;
+	int type;
+
+	struct s_map_case* next;
+};
+
+typedef struct s_map_case* map_case;
 
 void skip_line(int file_id)
 {
@@ -21,7 +31,7 @@ void skip_word(int file_id)
 
 void read_word(int file_id, char label[])
 {
-	printf("%s");
+	printf("%s", label);
 	char c = 62;
 	while (c !=' ')
 	{
@@ -185,7 +195,7 @@ int main(int argc, char* argv[])
 	{
 		if (getinfo)
 			skip_line(f);
-	
+
 		int num_object = 0;
 		char c = '0';
 		while (c != '\n')
@@ -248,8 +258,125 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-	
+
 		printf("\n");
+	}
+
+	if (!setwidth || !setheight)
+	{
+		int value_width = atoi(argv[3]);
+		int value_height = 12; //TODO
+		if (argc < 4 || value_width < 1 || value_height < 1)
+		{
+			fprintf(stderr, "%s\n", "--setwidth and --setheight need a int value superior to zero.");
+		}
+
+		char c = 'a';
+		int width = 0;
+		int height = 0;
+		int num_object = 0;
+		read(f, &c, sizeof(char));
+
+		while (c != ' ')
+		{
+			width = width * 10 + c - '0';
+			read(f, &c, sizeof(char));
+		}
+
+		read(f, &c, sizeof(char));
+		while (c != '\n')
+		{
+			height = height * 10 + c - '0';
+			read(f, &c, sizeof(char));
+		}
+
+		read(f, &c, sizeof(char));
+		while (c != '\n')
+		{
+			num_object = num_object * 10 + c - '0';
+			read(f, &c, sizeof(char));
+		}
+
+		map_case prev = NULL;
+		map_case first = NULL;
+		int nb_objects = 0;
+		for (int i = 0; i < num_object; i++)
+		{
+			int pos_x = 0;
+			int pos_y = 0;
+			int type = 0;
+			read(f, &c, sizeof(char));
+			while (c != ' ')
+			{
+				pos_x = pos_x * 10 + c - '0';
+				read(f, &c, sizeof(char));
+			}
+
+			read(f, &c, sizeof(char));
+			while (c != ' ')
+			{
+				pos_y = pos_y * 10 + c - '0';
+				read(f, &c, sizeof(char));
+			}
+
+			read(f, &c, sizeof(char));
+			while (c != '\n')
+			{
+				type = type * 10 + c - '0';
+				read(f, &c, sizeof(char));
+			}
+
+			if (pos_x < value_width && pos_y < value_height)
+			{
+				nb_objects++;
+
+				map_case m_case = (map_case)malloc(sizeof(struct s_map_case));
+				m_case->x = pos_x;
+				m_case->y = pos_y + (value_height - height);
+				m_case->type = type;
+				m_case->next = NULL;
+
+				if (first == NULL)
+					first = m_case;
+				else
+					prev->next = m_case;
+				prev = m_case;
+			}
+		}
+
+		//int new_file = open("tmp", O_WRONLY);
+		FILE* new_file = fopen("tmp", "w");
+		fprintf(new_file, "%d %d\n%d\n", value_width, value_height, nb_objects);
+		map_case m_case = first;
+		while (m_case != NULL)
+		{
+			first = m_case;
+			fprintf(new_file, "%d %d %d\n", first->x, first->y, first->type);
+
+			m_case = first->next;
+			free(first);
+		}
+
+		int remaining = read(f, &c, sizeof(char));
+		while (remaining > 0)
+		{
+			fprintf(new_file, "%c", c);
+			remaining = read(f, &c, sizeof(char));
+		}
+
+		fclose(new_file);
+		close(f);
+		int nf = open("tmp", O_RDONLY);
+		new_file = fopen(argv[1], "w");
+		int l = read(nf, &c, sizeof(char));
+		while (l > 0)
+		{
+			fprintf(new_file, "%c", c);
+			l = read(nf, &c, sizeof(char));
+		}
+		fclose(new_file);
+		close(nf);
+		//remove("tmp");
 	}
 
 	close(f);
