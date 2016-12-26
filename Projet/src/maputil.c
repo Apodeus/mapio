@@ -22,12 +22,12 @@ void skip_word(int file_id)
 void read_word(int file_id, char label[])
 {
 	printf("%s");
-			char c = 62;
-			while (c !=' ')
-			{
-				read(file_id, &c, sizeof(char));
-				printf("%c", c);
-			}
+	char c = 62;
+	while (c !=' ')
+	{
+		read(file_id, &c, sizeof(char));
+		printf("%c", c);
+	}
 }
 
 int read_digit(int file_id)
@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
 	{
 		if (getinfo)
 			skip_line(f);
+	
 		int num_object = 0;
 		char c = '0';
 		while (c != '\n')
@@ -167,6 +168,7 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
+	
 		printf("\n");
 	}
 

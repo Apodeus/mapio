@@ -70,7 +70,6 @@ void map_save (char *filename)
 	fprintf(f, "%d %d\n", width, height);
 
 	for (int i = 0; i < width; i++)
-	{
 		for (int j = 0; j < height; j++)
 		{
 			int object = map_get(i, j);
@@ -91,7 +90,7 @@ void map_save (char *filename)
 				prev = m_case;
 			}
 		}
-	}
+
 	fprintf(f, "%d\n", nb_objects);
 
 	map_case m_case = first;
@@ -105,7 +104,6 @@ void map_save (char *filename)
 	}
 
 	fprintf(f, "%d\n", num_items);
-
 	for (int i = 0; i < num_items; i++)
 	{
 		char* path = map_get_name(i);
