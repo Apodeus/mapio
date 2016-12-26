@@ -25,4 +25,5 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 
 ##Membres
 **Apodeus** : Romain Ordonez
+
 **Echoffee** : Adrien Halnaut
