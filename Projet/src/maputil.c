@@ -61,6 +61,7 @@ void pruneobjects(char* filename){
 		fgets(buffer, buff_size, file);
 
 	int nb_object = atoi(buffer);
+	// printf("nb:%d|buf:%s\n", nb_object, buffer);
 
 	//On crée un tableau de taile N objet initialisé rempli par défaut avec des 0
 	int checkingObjects[nb_object];
@@ -94,14 +95,16 @@ void pruneobjects(char* filename){
 
 	fgets(buffer, buff_size, file);
 
-	nb_object = 0;
-	for(int i = 0; i < nb_object; i++)
-		nb_object += checkingObjects[i];
+	int new_nb_object = 0;
 
-	sprintf(buffer, "%d\0", nb_object);
+	for(int i = 0; i < nb_object; i++){
+		// printf("tab[%d] = %d|nb_obj:%d\n", i, checkingObjects[i], nb_object);
+		new_nb_object += checkingObjects[i];
+	}
+
+	sprintf(buffer, "%d\n\0", new_nb_object);
 
 	fputs(buffer, new_file);
-
 
 	for(int i = 0; i < nb_object; i++){
 		fgets(buffer, buff_size, file);
@@ -111,7 +114,7 @@ void pruneobjects(char* filename){
 
 	fclose(file);
 	fclose(new_file);
-	
+
 	remove(filename);
 	rename(tmp_filename, filename);
 
@@ -132,8 +135,9 @@ int main(int argc, char* argv[])
 	int setwidth = strcmp(argv[2], "--setwidth");
 	int setheight = strcmp(argv[2], "--setheight");
 	int setobjects = strcmp(argv[2], "--setobjects");
+	int pruneobject = strcmp(argv[2], "--pruneobjects");
 
-	if (getwidth * getheight * getobjects * getinfo * setwidth * setheight * setobjects)
+	if (getwidth * getheight * getobjects * getinfo * setwidth * setheight * setobjects * pruneobject)
 	{
 		fprintf(stderr, "%s\n", "Aivalable commandes : --getwidth, --getheight, --getobjects, --getinfo, --setwidth, --setheight, --setobjects");
 		return 1;
@@ -151,6 +155,11 @@ int main(int argc, char* argv[])
 		getwidth = 0;
 		getheight = 0;
 		getobjects = 0;
+	}
+
+	if(!pruneobject)
+	{
+		pruneobjects(argv[1]);
 	}
 
 	if (!getwidth || !getheight)
