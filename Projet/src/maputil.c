@@ -47,6 +47,30 @@ int read_digit(int file_id)
 	return c - '0';
 }
 
+int* findNewId(int* checkTab, int nb_object){
+	int* tab2 = (int*)malloc(sizeof(int) * nb_object);
+
+	int debug = 1;
+
+	for(int i = 0; i < nb_object; i++)
+		tab2[i] = 0;
+	
+	for(int i = 0; i < nb_object; i++){
+		int nb_zero = 0;
+		for(int j = 0; j < i; j++){
+			if(checkTab[j] == 0){
+				nb_zero += 1;
+			}
+		}
+		if(debug){printf("checkObj[%d]= %d  | NB_ZERO=%d\n",i ,checkTab[i], nb_zero );}
+		if(checkTab[i] != 0)
+			tab2[i] = i - nb_zero;
+		if(debug){printf("checkObj2[%d]= %d\n",i , tab2[i]);}
+	}
+
+	return tab2;
+}
+
 void pruneobjects(char* filename){
 	FILE* file = fopen(filename, "r+");
 
@@ -73,7 +97,7 @@ void pruneobjects(char* filename){
 	int nb_object = atoi(buffer);
 	// printf("nb:%d|buf:%s\n", nb_object, buffer);
 
-	//On crée un tableau de taile N objet initialisé rempli par défaut avec des 0
+	//On crée un tableau de taille N objet initialisé rempli par défaut avec des 0
 	int checkingObjects[nb_object];
 
 	for(int i = 0; i < nb_object; i++)
@@ -93,7 +117,7 @@ void pruneobjects(char* filename){
 	//On recupere les ID des elements présents, et on met à 1 quand il est présent.
 	for(int i = 0; i < nb_elem; i++){
 		fgets(buffer, buff_size, file);
-		fputs(buffer, new_file);
+		// fputs(buffer, new_file);
 		tokken = strtok(buffer, delim);
 		tokken = strtok(NULL, delim);
 		tokken = strtok(NULL, delim);
@@ -101,6 +125,28 @@ void pruneobjects(char* filename){
 		int id = atoi(tokken);
 
 		checkingObjects[id] = 1;
+	}
+
+	int* newIDs = findNewId(checkingObjects, nb_object);
+	fseek( file, 0, SEEK_SET );
+	// fseek( new_file, 0, SEEK_SET);
+
+	for(int i = 0; i < header + 1; i++){
+		fgets(buffer, buff_size, file);
+		// fgets(buffer, buff_size, new_file);
+	}
+
+	for(int i = 0; i < nb_elem; i++){
+		char tmp[256];
+		fgets(buffer, buff_size, file);
+		tokken = strtok(buffer, delim);
+		sprintf(tmp, "%s", tokken);
+		tokken = strtok(NULL, delim);
+		sprintf(tmp, "%s %s", tmp, tokken);
+		tokken = strtok(NULL, delim);
+		// printf("%s %s\n", tokken, tmp);
+		sprintf(tmp, "%s %d\n", tmp, newIDs[atoi(tokken)]);
+		fputs(tmp, new_file);
 	}
 
 	fgets(buffer, buff_size, file);
@@ -121,6 +167,8 @@ void pruneobjects(char* filename){
 		if(checkingObjects[i] == 1)
 			fputs(buffer, new_file);
 	}
+
+	
 
 	fclose(file);
 	fclose(new_file);
