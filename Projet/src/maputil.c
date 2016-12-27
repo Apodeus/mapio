@@ -50,7 +50,7 @@ int read_digit(int file_id)
 int* findNewId(int* checkTab, int nb_object){
 	int* tab2 = (int*)malloc(sizeof(int) * nb_object);
 
-	int debug = 1;
+	int debug = 0;
 
 	for(int i = 0; i < nb_object; i++)
 		tab2[i] = 0;
@@ -62,10 +62,8 @@ int* findNewId(int* checkTab, int nb_object){
 				nb_zero += 1;
 			}
 		}
-		if(debug){printf("checkObj[%d]= %d  | NB_ZERO=%d\n",i ,checkTab[i], nb_zero );}
 		if(checkTab[i] != 0)
 			tab2[i] = i - nb_zero;
-		if(debug){printf("checkObj2[%d]= %d\n",i , tab2[i]);}
 	}
 
 	return tab2;
@@ -85,14 +83,18 @@ void pruneobjects(char* filename){
 	int header = 1;
 
 	//On recupere le nombre d'element sur la map
-	for(int i = 0; i < header + 1; i++)
-		fgets(buffer, buff_size, file);
+	for(int i = 0; i < header + 1; i++){
+		if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
+	}
 
 	int nb_elem = atoi(buffer);
 
 	//On Saut les N element de la map pour acceder au nombre d'objet initialisé
-	for(int i = 0; i <= nb_elem; i ++)
-		fgets(buffer, buff_size, file);
+	for(int i = 0; i <= nb_elem; i ++){
+		if(	fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
+	}
 
 	int nb_object = atoi(buffer);
 	// printf("nb:%d|buf:%s\n", nb_object, buffer);
@@ -110,13 +112,15 @@ void pruneobjects(char* filename){
 
 	for(int i = 0; i < header + 1; i++)
 	{
-		fgets(buffer, buff_size, file);
+		if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
 		fputs(buffer, new_file);
 	}
 
 	//On recupere les ID des elements présents, et on met à 1 quand il est présent.
 	for(int i = 0; i < nb_elem; i++){
-		fgets(buffer, buff_size, file);
+		if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
 		// fputs(buffer, new_file);
 		tokken = strtok(buffer, delim);
 		tokken = strtok(NULL, delim);
@@ -132,13 +136,15 @@ void pruneobjects(char* filename){
 	// fseek( new_file, 0, SEEK_SET);
 
 	for(int i = 0; i < header + 1; i++){
-		fgets(buffer, buff_size, file);
+		if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
 		// fgets(buffer, buff_size, new_file);
 	}
 
 	for(int i = 0; i < nb_elem; i++){
 		char tmp[256];
-		fgets(buffer, buff_size, file);
+		if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
 		tokken = strtok(buffer, delim);
 		sprintf(tmp, "%s", tokken);
 		tokken = strtok(NULL, delim);
@@ -149,7 +155,8 @@ void pruneobjects(char* filename){
 		fputs(tmp, new_file);
 	}
 
-	fgets(buffer, buff_size, file);
+	if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
 
 	int new_nb_object = 0;
 
@@ -163,7 +170,8 @@ void pruneobjects(char* filename){
 	fputs(buffer, new_file);
 
 	for(int i = 0; i < nb_object; i++){
-		fgets(buffer, buff_size, file);
+		if(fgets(buffer, buff_size, file) == NULL)
+			exit(EXIT_FAILURE);
 		if(checkingObjects[i] == 1)
 			fputs(buffer, new_file);
 	}
@@ -172,6 +180,7 @@ void pruneobjects(char* filename){
 
 	fclose(file);
 	fclose(new_file);
+	free(newIDs);
 
 	remove(filename);
 	rename(tmp_filename, filename);
