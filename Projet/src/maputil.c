@@ -13,7 +13,33 @@ struct s_map_case
 	struct s_map_case* next;
 };
 
+struct s_object
+{
+	int lenght_path;
+	char* path;
+	int frames;
+	int solidity;
+	int destructible;
+	int collectible;
+	int generator;
+	struct s_object* next;
+};
+
+struct s_map_info
+{
+	char* filename;
+	int width = 0;
+	int height = 0;
+	int nb_element = 0;
+	int nb_object = 0;
+
+	struct s_map_case* first;
+	struct s_object* first;
+};
+
 typedef struct s_map_case* map_case;
+typedef struct s_object* object;
+typedef struct s_map_info* map;
 
 void skip_line(int file_id)
 {
@@ -45,6 +71,147 @@ int read_digit(int file_id)
 	char c = '0';
 	read(file_id, &c, sizeof(char));
 	return c - '0';
+}
+
+map convertFile(char* filename){
+	//Initialisation des trois structures
+	map_case first_case = (map_case)malloc(sizeof(struct s_map_case));
+	object first_object = (object)malloc(sizeof(struct s_object));
+	map loading_map = (map)malloc(sizeof(struct s_map_info));
+	//On recopie le nom du fichier dans la map entrain de charger
+	loading_map->filename = (char*)malloc(sizeof(char) * strlen(filename));
+	strcpy(loading_map->filename, filename);
+
+	//On ouvre le fichier de sauvegarde en lecture
+	FILE* file_save = fopen(filename, "r");
+
+	int buff_size = 256;
+	char buffer[buff_size];
+	char* tokken;
+	char delim[2] = " ";
+
+	//On recupere la largeur et la hauteur
+	fgets(buffer, buff_size, file_save);
+	tokken = strtok(buffer, delim);
+	loading_map->width = atoi(tokken);
+	tokken = strtok(NULL, delim);
+	loading_map->height = atoi(tokken);
+
+	//On recupere le nombre d'élement, et on initialise la struture du premier element à NULL
+	fgets(buffer, buff_size, file_save);
+	tokken = strtok(buffer, delim);
+	loading_map->nb_element = atoi(tokken);
+	loading_map->first_case	= NULL;
+
+	//Si il y a au moins un element, alors on rempli les structures map_case
+	if(nb_element > 0){
+
+		fgets(buffer, buff_size, file_save);
+		tokken = strtok(buffer, delim);
+		first_case->x = atoi(tokken);
+		tokken = strtok(NULL, delim);
+		first_case->y = atoi(tokken);
+		tokken = strtok(NULL, delim);
+		first_case->id = atoi(tokken);
+
+		first_case->next = NULL;
+
+		loading_map->first_case = first_case;
+
+		for(int i = 0; i < loading_map->nb_element - 1; i++){
+			fgets(buffer, buff_size, file_save);
+
+			map_case actual_case = (map_case)malloc(sizeof(struct s_map_case));
+			first_case->next = actual_case;
+
+			tokken = strtok(buffer, delim);
+			actual_case->x = atoi(tokken);
+			tokken = strtok(NULL, delim);
+			actual_case->y = atoi(tokken);
+			tokken = strtok(NULL, delim);
+			actual_case->id = atoi(tokken);
+			actual_case->next = NULL;
+			first_case = actual_case;
+
+		}
+
+	}
+
+	//On recupere le nombre d'objet
+	fgets(buffer, buff_size, file_save);
+	tokken = strtok(buffer, delim);
+	loading_map->nb_object = atoi(tokken);
+
+	//Si il n'y a pas d'objet chargé, on fixe la structure first_object à NULL, et on retourne la structure de la map
+	if(loading_map->nb_object <= 0)
+	{
+		loading_map->first_object = NULL;
+		return loading_map;
+	}
+
+	//On recupere les informations du premier objet
+	fgets(buffer, buff_size, file_save);
+	tokken = strtok(buffer, delim);
+	first_object->lenght_path = atoi(tokken);
+
+	tokken = strtok(NULL, delim);
+	first_object->path = (char*) malloc(first_object->lenght_path * sizeof(char));
+	strcpy(first_object->path, tokken);
+	tokken = strtok(NULL, delim);
+	first_object->frames = atoi(tokken);
+
+	tokken = strtok(NULL, delim);
+	first_object->solidity = atoi(tokken);
+
+	tokken = strtok(NULL, delim);
+	first_object->destructible = atoi(tokken);
+
+	tokken = strtok(NULL, delim);
+	first_object->collectible = atoi(tokken);
+
+	tokken = strtok(NULL, delim);
+	first_object->generator = atoi(tokken);
+
+
+	first_object->next = NULL;
+
+	loading_map->first_object = first_object;
+
+	//On recupere les informations des objets suivant
+	for(int i = 0; i < loading_map->nb_object - 1; i++){
+
+		fgets(buffer, buff_size, file_save);
+		object actual_object = (object)malloc(sizeof(struct s_object));
+
+		tokken = strtok(buffer, delim);
+		actual_object->lenght_path = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		actual_object->path = (char*) malloc(actual_object->lenght_path * sizeof(char));
+		strcpy(actual_object->path, tokken);
+
+		tokken = strtok(NULL, delim);
+		actual_object->frames = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		actual_object->solidity = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		actual_object->destructible = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		actual_object->collectible = atoi(tokken);
+
+		tokken = strtok(NULL, delim);
+		actual_object->generator = atoi(tokken);
+
+		actual_object->next = NULL;
+		first_object->next = actual_object;
+
+		first_object = actual_object;
+	}
+
+	return loading_map;
 }
 
 int* findNewId(int* checkTab, int nb_object){
