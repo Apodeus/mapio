@@ -432,17 +432,8 @@ int main(int argc, char* argv[])
 
 		fclose(new_file);
 		close(f);
-		int nf = open("tmp", O_RDONLY);
-		new_file = fopen(argv[1], "w");
-		int l = read(nf, &c, sizeof(char));
-		while (l > 0)
-		{
-			fprintf(new_file, "%c", c);
-			l = read(nf, &c, sizeof(char));
-		}
-		fclose(new_file);
-		close(nf);
-		//remove("tmp");
+		remove(argv[2]);
+		rename("tmp", argv[2]);
 	}
 
 	close(f);
