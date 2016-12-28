@@ -22,6 +22,7 @@ struct s_object
 	int destructible;
 	int collectible;
 	int generator;
+	int active;
 	struct s_object* next;
 };
 
@@ -172,6 +173,8 @@ map convertFile(char* filename){
 	tokken = strtok(NULL, delim);
 	first_object->generator = atoi(tokken);
 
+	first_object->active = 1;
+
 
 	first_object->next = NULL;
 
@@ -205,6 +208,8 @@ map convertFile(char* filename){
 		tokken = strtok(NULL, delim);
 		actual_object->generator = atoi(tokken);
 
+		actual_object->active = 1;
+
 		actual_object->next = NULL;
 		first_object->next = actual_object;
 
@@ -236,123 +241,195 @@ int* findNewId(int* checkTab, int nb_object){
 	return tab2;
 }
 
-void pruneobjects(char* filename){
-	FILE* file = fopen(filename, "r+");
-
-	int buff_size = 128;
-	char buffer[buff_size];
-
-	char* tokken;
-	char delim[2] = " ";
-
-	char tmp_filename[4] = "tmp";
-	//Le nombre de ligne à sauter pour acceder aux elements voulu..
-	int header = 1;
-
-	//On recupere le nombre d'element sur la map
-	for(int i = 0; i < header + 1; i++){
-		if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-	}
-
-	int nb_elem = atoi(buffer);
-
-	//On Saut les N element de la map pour acceder au nombre d'objet initialisé
-	for(int i = 0; i <= nb_elem; i ++){
-		if(	fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-	}
-
-	int nb_object = atoi(buffer);
-	// printf("nb:%d|buf:%s\n", nb_object, buffer);
-
-	//On crée un tableau de taille N objet initialisé rempli par défaut avec des 0
-	int checkingObjects[nb_object];
-
+void pruneobjects(map saved_map){
+	int nb_element = saved_map->nb_element;
+	int nb_object = saved_map->nb_object;
+	int checkObject[nb_object];
 	for(int i = 0; i < nb_object; i++)
-		checkingObjects[i] = 0;
+		checkObject[i] = 0;
 
-	//DEBUT REECRITURE
-	FILE* new_file = fopen("tmp", "w");
-	//On se replace au début du fichier puis à la position ou se situe les coordonnées
-	fseek( file, 0, SEEK_SET );
-
-	for(int i = 0; i < header + 1; i++)
-	{
-		if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-		fputs(buffer, new_file);
+	map_case actual_case = saved_map->first_case;
+	while(actual_case != NULL){
+		checkObject[actual_case->type] = 1;
+		actual_case = actual_case->next;
 	}
 
-	//On recupere les ID des elements présents, et on met à 1 quand il est présent.
-	for(int i = 0; i < nb_elem; i++){
-		if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-		// fputs(buffer, new_file);
-		tokken = strtok(buffer, delim);
-		tokken = strtok(NULL, delim);
-		tokken = strtok(NULL, delim);
+	int* newIDs = findNewId(checkObject, nb_object);
 
-		int id = atoi(tokken);
+	actual_case = saved_map->first_case;
 
-		checkingObjects[id] = 1;
+	while(actual_case != NULL){
+		actual_case->type = newIDs[actual_case->type];
+		actual_case = actual_case->next;
 	}
 
-	int* newIDs = findNewId(checkingObjects, nb_object);
-	fseek( file, 0, SEEK_SET );
-	// fseek( new_file, 0, SEEK_SET);
+	object actual_object = saved_map->first_object;
 
-	for(int i = 0; i < header + 1; i++){
-		if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-		// fgets(buffer, buff_size, new_file);
-	}
-
-	for(int i = 0; i < nb_elem; i++){
-		char tmp[256];
-		if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-		tokken = strtok(buffer, delim);
-		sprintf(tmp, "%s", tokken);
-		tokken = strtok(NULL, delim);
-		sprintf(tmp, "%s %s", tmp, tokken);
-		tokken = strtok(NULL, delim);
-		// printf("%s %s\n", tokken, tmp);
-		sprintf(tmp, "%s %d\n", tmp, newIDs[atoi(tokken)]);
-		fputs(tmp, new_file);
-	}
-
-	if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-
+	int i = 0;
 	int new_nb_object = 0;
+	while(actual_object != NULL){
+		if(checkObject[i] == 0)
+			actual_object->active = 0;
 
-	for(int i = 0; i < nb_object; i++){
-		// printf("tab[%d] = %d|nb_obj:%d\n", i, checkingObjects[i], nb_object);
-		new_nb_object += checkingObjects[i];
+		new_nb_object += checkObject[i];
+		i++;
+		actual_object = actual_object->next;
 	}
+	saved_map->nb_object = new_nb_object;
 
-	sprintf(buffer, "%d\n", new_nb_object);
+	free(newIDs);
+}
 
+void translateMapInFile(map new_map, char* filename){
+	FILE* new_file = fopen(filename, "w");
+	char buffer[256];
+	sprintf(buffer, "%d %d\n", new_map->width, new_map->height);
 	fputs(buffer, new_file);
 
-	for(int i = 0; i < nb_object; i++){
-		if(fgets(buffer, buff_size, file) == NULL)
-			exit(EXIT_FAILURE);
-		if(checkingObjects[i] == 1)
-			fputs(buffer, new_file);
+	sprintf(buffer, "%d\n", new_map->nb_element);
+	fputs(buffer, new_file);
+
+	map_case actual_case = new_map->first_case;
+	while(actual_case != NULL){
+		sprintf(buffer, "%d %d %d\n", actual_case->x, actual_case->y, actual_case->type);
+		fputs(buffer, new_file);
+		actual_case = actual_case->next;
 	}
+
+	sprintf(buffer, "%d\n", new_map->nb_object);
+	fputs(buffer, new_file);
+
+	object actual_object = new_map->first_object;
+	while(actual_object != NULL){
+		if(actual_object->active == 1){
+			sprintf(buffer, "%d %s %d %d %d %d %d\n", 
+				actual_object->lenght_path, actual_object->path, actual_object->frames, actual_object->solidity,
+					actual_object->destructible, actual_object->collectible, actual_object->generator);
+			fputs(buffer, new_file);
+		}
+		actual_object = actual_object->next;
+	}
+
+	fclose(new_file);
+}
+
+// void pruneobjects(char* filename){
+// 	FILE* file = fopen(filename, "r+");
+
+// 	int buff_size = 128;
+// 	char buffer[buff_size];
+
+// 	char* tokken;
+// 	char delim[2] = " ";
+
+// 	char tmp_filename[4] = "tmp";
+// 	//Le nombre de ligne à sauter pour acceder aux elements voulu..
+// 	int header = 1;
+
+// 	//On recupere le nombre d'element sur la map
+// 	for(int i = 0; i < header + 1; i++){
+// 		if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 	}
+
+// 	int nb_elem = atoi(buffer);
+
+// 	//On Saut les N element de la map pour acceder au nombre d'objet initialisé
+// 	for(int i = 0; i <= nb_elem; i ++){
+// 		if(	fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 	}
+
+// 	int nb_object = atoi(buffer);
+// 	// printf("nb:%d|buf:%s\n", nb_object, buffer);
+
+// 	//On crée un tableau de taille N objet initialisé rempli par défaut avec des 0
+// 	int checkingObjects[nb_object];
+
+// 	for(int i = 0; i < nb_object; i++)
+// 		checkingObjects[i] = 0;
+
+// 	//DEBUT REECRITURE
+// 	FILE* new_file = fopen("tmp", "w");
+// 	//On se replace au début du fichier puis à la position ou se situe les coordonnées
+// 	fseek( file, 0, SEEK_SET );
+
+// 	for(int i = 0; i < header + 1; i++)
+// 	{
+// 		if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 		fputs(buffer, new_file);
+// 	}
+
+// 	//On recupere les ID des elements présents, et on met à 1 quand il est présent.
+// 	for(int i = 0; i < nb_elem; i++){
+// 		if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 		// fputs(buffer, new_file);
+// 		tokken = strtok(buffer, delim);
+// 		tokken = strtok(NULL, delim);
+// 		tokken = strtok(NULL, delim);
+
+// 		int id = atoi(tokken);
+
+// 		checkingObjects[id] = 1;
+// 	}
+
+// 	int* newIDs = findNewId(checkingObjects, nb_object);
+// 	fseek( file, 0, SEEK_SET );
+// 	// fseek( new_file, 0, SEEK_SET);
+
+// 	for(int i = 0; i < header + 1; i++){
+// 		if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 		// fgets(buffer, buff_size, new_file);
+// 	}
+
+// 	for(int i = 0; i < nb_elem; i++){
+// 		char tmp[256];
+// 		if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 		tokken = strtok(buffer, delim);
+// 		sprintf(tmp, "%s", tokken);
+// 		tokken = strtok(NULL, delim);
+// 		sprintf(tmp, "%s %s", tmp, tokken);
+// 		tokken = strtok(NULL, delim);
+// 		// printf("%s %s\n", tokken, tmp);
+// 		sprintf(tmp, "%s %d\n", tmp, newIDs[atoi(tokken)]);
+// 		fputs(tmp, new_file);
+// 	}
+
+// 	if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+
+// 	int new_nb_object = 0;
+
+// 	for(int i = 0; i < nb_object; i++){
+// 		// printf("tab[%d] = %d|nb_obj:%d\n", i, checkingObjects[i], nb_object);
+// 		new_nb_object += checkingObjects[i];
+// 	}
+
+// 	sprintf(buffer, "%d\n", new_nb_object);
+
+// 	fputs(buffer, new_file);
+
+// 	for(int i = 0; i < nb_object; i++){
+// 		if(fgets(buffer, buff_size, file) == NULL)
+// 			exit(EXIT_FAILURE);
+// 		if(checkingObjects[i] == 1)
+// 			fputs(buffer, new_file);
+// 	}
 
 	
 
-	fclose(file);
-	fclose(new_file);
-	free(newIDs);
+// 	fclose(file);
+// 	fclose(new_file);
+// 	free(newIDs);
 
-	remove(filename);
-	rename(tmp_filename, filename);
+// 	remove(filename);
+// 	rename(tmp_filename, filename);
 
-}
+// }
 
 int main(int argc, char* argv[])
 {
@@ -378,6 +455,9 @@ int main(int argc, char* argv[])
 	}
 
 	int f = open(argv[1], O_RDONLY);
+	map actual_map = convertFile(argv[1]);
+	// printf("name: %s\nwidth: %d\nheight: %d\nnb_elem: %d\nnb_object: %d\n", 
+	// 	actual_map->filename, actual_map->width, actual_map->height, actual_map->nb_element, actual_map->nb_object);
 	if (f == -1)
 	{
 		fprintf(stderr, "%s %s %s\n", "File", argv[1], "does not exist.");
@@ -393,7 +473,8 @@ int main(int argc, char* argv[])
 
 	if(!pruneobject)
 	{
-		pruneobjects(argv[1]);
+		pruneobjects(actual_map);
+		translateMapInFile(actual_map, "tmp_map_test.map");
 	}
 
 	if (!getwidth || !getheight)
