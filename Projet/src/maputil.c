@@ -28,13 +28,13 @@ struct s_object
 struct s_map_info
 {
 	char* filename;
-	int width = 0;
-	int height = 0;
-	int nb_element = 0;
-	int nb_object = 0;
+	int width;
+	int height;
+	int nb_element;
+	int nb_object;
 
-	struct s_map_case* first;
-	struct s_object* first;
+	struct s_map_case* first_case;
+	struct s_object* first_object;
 };
 
 typedef struct s_map_case* map_case;
@@ -104,7 +104,7 @@ map convertFile(char* filename){
 	loading_map->first_case	= NULL;
 
 	//Si il y a au moins un element, alors on rempli les structures map_case
-	if(nb_element > 0){
+	if(loading_map->nb_element > 0){
 
 		fgets(buffer, buff_size, file_save);
 		tokken = strtok(buffer, delim);
@@ -112,7 +112,7 @@ map convertFile(char* filename){
 		tokken = strtok(NULL, delim);
 		first_case->y = atoi(tokken);
 		tokken = strtok(NULL, delim);
-		first_case->id = atoi(tokken);
+		first_case->type = atoi(tokken);
 
 		first_case->next = NULL;
 
@@ -129,7 +129,7 @@ map convertFile(char* filename){
 			tokken = strtok(NULL, delim);
 			actual_case->y = atoi(tokken);
 			tokken = strtok(NULL, delim);
-			actual_case->id = atoi(tokken);
+			actual_case->type = atoi(tokken);
 			actual_case->next = NULL;
 			first_case = actual_case;
 
