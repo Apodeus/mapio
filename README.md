@@ -14,7 +14,8 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 - ~~[E] `map_save()` *Difficulté : +*~~
 - ~~[A] `map_load()` *Difficulté : +*~~
 - ~~[E] `maputil.c` : Commandes `--get` *Difficulté : +*~~
-- [E] `maputil.c` : Commandes `--set` *Difficulté : ++, +++*
+- [E] `maputil.c` : Commandes `--setwidth` et `--setheight` *Difficulté : ++*
+- [?] `maputil.c` : Commande `--setobjects` *Difficulté : +++*
 - [A] `maputil.c` : Commande `--pruneobjects` *Difficulté : ++*
 
 ###Deuxième Partie : Gestion des temporisateurs
@@ -22,6 +23,8 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 
 ##TODOs
 - `map_save()` et `map_load()` : utiliser des fonctions bas niveau plutôt que les `fopen()`, etc...
+- `maputil` : rendre possible l'utilisation de plusieurs commandes en une seule ligne
+- `maputil` : vérifier le fichier utilisé avant de le manipuler
 
 ##Membres
 **Apodeus** : Romain Ordonez
