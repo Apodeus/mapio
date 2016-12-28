@@ -281,6 +281,7 @@ void pruneobjects(map saved_map){
 }
 
 void translateMapInFile(map new_map, char* filename){
+	remove(filename);
 	FILE* new_file = fopen(filename, "w");
 	char buffer[256];
 	sprintf(buffer, "%d %d\n", new_map->width, new_map->height);
@@ -474,7 +475,7 @@ int main(int argc, char* argv[])
 	if(!pruneobject)
 	{
 		pruneobjects(actual_map);
-		translateMapInFile(actual_map, "tmp_map_test.map");
+		translateMapInFile(actual_map, argv[1]);
 	}
 
 	if (!getwidth || !getheight)
