@@ -219,6 +219,7 @@ map convertFile(char* filename){
 	return loading_map;
 }
 
+//Permet de determiner les nouvelles ID des elements sur la map (pour pruneobjects)
 int* findNewId(int* checkTab, int nb_object){
 	int* tab2 = (int*)malloc(sizeof(int) * nb_object);
 
@@ -241,6 +242,7 @@ int* findNewId(int* checkTab, int nb_object){
 	return tab2;
 }
 
+//Enleve les objets non utilisés
 void pruneobjects(map saved_map){
 	int nb_element = saved_map->nb_element;
 	int nb_object = saved_map->nb_object;
@@ -280,6 +282,7 @@ void pruneobjects(map saved_map){
 	free(newIDs);
 }
 
+//Convertit la structure map en un fichier de sauvegarde 
 void translateMapInFile(map new_map, char* filename){
 	remove(filename);
 	FILE* new_file = fopen(filename, "w");
@@ -313,124 +316,6 @@ void translateMapInFile(map new_map, char* filename){
 
 	fclose(new_file);
 }
-
-// void pruneobjects(char* filename){
-// 	FILE* file = fopen(filename, "r+");
-
-// 	int buff_size = 128;
-// 	char buffer[buff_size];
-
-// 	char* tokken;
-// 	char delim[2] = " ";
-
-// 	char tmp_filename[4] = "tmp";
-// 	//Le nombre de ligne à sauter pour acceder aux elements voulu..
-// 	int header = 1;
-
-// 	//On recupere le nombre d'element sur la map
-// 	for(int i = 0; i < header + 1; i++){
-// 		if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 	}
-
-// 	int nb_elem = atoi(buffer);
-
-// 	//On Saut les N element de la map pour acceder au nombre d'objet initialisé
-// 	for(int i = 0; i <= nb_elem; i ++){
-// 		if(	fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 	}
-
-// 	int nb_object = atoi(buffer);
-// 	// printf("nb:%d|buf:%s\n", nb_object, buffer);
-
-// 	//On crée un tableau de taille N objet initialisé rempli par défaut avec des 0
-// 	int checkingObjects[nb_object];
-
-// 	for(int i = 0; i < nb_object; i++)
-// 		checkingObjects[i] = 0;
-
-// 	//DEBUT REECRITURE
-// 	FILE* new_file = fopen("tmp", "w");
-// 	//On se replace au début du fichier puis à la position ou se situe les coordonnées
-// 	fseek( file, 0, SEEK_SET );
-
-// 	for(int i = 0; i < header + 1; i++)
-// 	{
-// 		if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 		fputs(buffer, new_file);
-// 	}
-
-// 	//On recupere les ID des elements présents, et on met à 1 quand il est présent.
-// 	for(int i = 0; i < nb_elem; i++){
-// 		if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 		// fputs(buffer, new_file);
-// 		tokken = strtok(buffer, delim);
-// 		tokken = strtok(NULL, delim);
-// 		tokken = strtok(NULL, delim);
-
-// 		int id = atoi(tokken);
-
-// 		checkingObjects[id] = 1;
-// 	}
-
-// 	int* newIDs = findNewId(checkingObjects, nb_object);
-// 	fseek( file, 0, SEEK_SET );
-// 	// fseek( new_file, 0, SEEK_SET);
-
-// 	for(int i = 0; i < header + 1; i++){
-// 		if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 		// fgets(buffer, buff_size, new_file);
-// 	}
-
-// 	for(int i = 0; i < nb_elem; i++){
-// 		char tmp[256];
-// 		if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 		tokken = strtok(buffer, delim);
-// 		sprintf(tmp, "%s", tokken);
-// 		tokken = strtok(NULL, delim);
-// 		sprintf(tmp, "%s %s", tmp, tokken);
-// 		tokken = strtok(NULL, delim);
-// 		// printf("%s %s\n", tokken, tmp);
-// 		sprintf(tmp, "%s %d\n", tmp, newIDs[atoi(tokken)]);
-// 		fputs(tmp, new_file);
-// 	}
-
-// 	if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-
-// 	int new_nb_object = 0;
-
-// 	for(int i = 0; i < nb_object; i++){
-// 		// printf("tab[%d] = %d|nb_obj:%d\n", i, checkingObjects[i], nb_object);
-// 		new_nb_object += checkingObjects[i];
-// 	}
-
-// 	sprintf(buffer, "%d\n", new_nb_object);
-
-// 	fputs(buffer, new_file);
-
-// 	for(int i = 0; i < nb_object; i++){
-// 		if(fgets(buffer, buff_size, file) == NULL)
-// 			exit(EXIT_FAILURE);
-// 		if(checkingObjects[i] == 1)
-// 			fputs(buffer, new_file);
-// 	}
-
-	
-
-// 	fclose(file);
-// 	fclose(new_file);
-// 	free(newIDs);
-
-// 	remove(filename);
-// 	rename(tmp_filename, filename);
-
-// }
 
 int main(int argc, char* argv[])
 {
