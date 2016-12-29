@@ -36,7 +36,7 @@ struct s_map_info
 	int nb_object;
 
 	struct s_map_object* first_case;
-	struct s_object_property* first_object;
+	struct s_object_property* first_property;
 };
 
 typedef struct s_map_object* map_object;
@@ -146,14 +146,7 @@ map_info load_map_file(char* filename)
 	token = strtok(buffer, delim);
 	loading_map->nb_object = atoi(token);
 
-	//Si il n'y a pas d'objet chargé, on fixe la structure first_object à NULL, et on retourne la structure de la map
-	if(loading_map->nb_object <= 0)
-	{
-		loading_map->first_object = NULL;
-		return loading_map;
-	}
-
-	loading_map->first_object = NULL;
+	loading_map->first_property = NULL;
 	object_property prev_object;
 	//On recupere les informations des objets
 	for(int i = 0; i < loading_map->nb_object; i++)
@@ -190,7 +183,7 @@ map_info load_map_file(char* filename)
 		if (prev_object != NULL)
 			prev_object->next = new_object;
 		else
-			loading_map->first_object = new_object;
+			loading_map->first_property = new_object;
 
 		prev_object = new_object;
 	}
@@ -199,7 +192,7 @@ map_info load_map_file(char* filename)
 }
 
 //Permet de determiner les nouvelles ID des elements sur la map (pour pruneobjects)
-int* findNewId(int* checkTab, int nb_object)
+int* find_new_id(int* check_tab, int nb_object)
 {
 	int* tab2 = (int*)malloc(sizeof(int) * nb_object);
 
@@ -213,11 +206,11 @@ int* findNewId(int* checkTab, int nb_object)
 		int nb_zero = 0;
 		for(int j = 0; j < i; j++)
 		{
-			if(checkTab[j] == 0)
+			if(check_tab[j] == 0)
 				nb_zero += 1;
 		}
 
-		if(checkTab[i] != 0)
+		if(check_tab[i] != 0)
 			tab2[i] = i - nb_zero;
 	}
 
@@ -228,80 +221,87 @@ int* findNewId(int* checkTab, int nb_object)
 void pruneobjects(map_info saved_map){
 	int nb_element = saved_map->nb_element;
 	int nb_object = saved_map->nb_object;
-	int checkObject[nb_object];
+	int check_object[nb_object];
 
 	for(int i = 0; i < nb_object; i++)
-		checkObject[i] = 0;
+		check_object[i] = 0;
 
 	map_object actual_case = saved_map->first_case;
 	while(actual_case != NULL)
 	{
-		checkObject[actual_case->type] = 1;
+		check_object[actual_case->type] = 1;
 		actual_case = actual_case->next;
 	}
 
-	int* newIDs = findNewId(checkObject, nb_object);
+	int* new_ids = find_new_id(check_object, nb_object);
 
 	actual_case = saved_map->first_case;
 
 	while(actual_case != NULL)
 	{
-		actual_case->type = newIDs[actual_case->type];
+		actual_case->type = new_ids[actual_case->type];
 		actual_case = actual_case->next;
 	}
 
-	object_property actual_object = saved_map->first_object;
+	object_property actual_object = saved_map->first_property;
 
 	int i = 0;
 	int new_nb_object = 0;
 	while(actual_object != NULL)
 	{
-		if(checkObject[i] == 0)
+		if(check_object[i] == 0)
 			actual_object->active = 0;
 
-		new_nb_object += checkObject[i];
+		new_nb_object += check_object[i];
 		i++;
 		actual_object = actual_object->next;
 	}
 
 	saved_map->nb_object = new_nb_object;
-	free(newIDs);
+	free(new_ids);
 }
 
 //Convertit la structure map en un fichier de sauvegarde 
-void translateMapInFile(map_info new_map, char* filename)
+void save_map_file(map_info new_map, char* filename)
 {
-	remove(filename);
-	FILE* new_file = fopen(filename, "w");
+	FILE* new_file = fopen("tmp", "w");
 	char buffer[256];
+
 	sprintf(buffer, "%d %d\n", new_map->width, new_map->height);
 	fputs(buffer, new_file);
 
 	sprintf(buffer, "%d\n", new_map->nb_element);
 	fputs(buffer, new_file);
 
-	map_object actual_case = new_map->first_case;
-	while(actual_case != NULL){
-		sprintf(buffer, "%d %d %d\n", actual_case->x, actual_case->y, actual_case->type);
+	map_object current_object = new_map->first_case;
+	while(current_object != NULL)
+	{
+		sprintf(buffer, "%d %d %d\n", current_object->x, current_object->y, current_object->type);
 		fputs(buffer, new_file);
-		actual_case = actual_case->next;
+
+		current_object = current_object->next;
 	}
 
 	sprintf(buffer, "%d\n", new_map->nb_object);
 	fputs(buffer, new_file);
 
-	object_property actual_object = new_map->first_object;
-	while(actual_object != NULL){
-		if(actual_object->active == 1){
+	object_property current_property = new_map->first_property;
+	while(current_property != NULL)
+	{
+		if(current_property->active)
+		{
 			sprintf(buffer, "%d %s %d %d %d %d %d\n", 
-				actual_object->lenght_path, actual_object->path, actual_object->frames, actual_object->solidity,
-					actual_object->destructible, actual_object->collectible, actual_object->generator);
+				current_property->lenght_path, current_property->path, current_property->frames, current_property->solidity,
+				current_property->destructible, current_property->collectible, current_property->generator);
 			fputs(buffer, new_file);
 		}
-		actual_object = actual_object->next;
+
+		current_property = current_property->next;
 	}
 
 	fclose(new_file);
+	remove(filename);
+	rename("tmp", filename);
 }
 
 int main(int argc, char* argv[])
@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
 	if(!pruneobject)
 	{
 		pruneobjects(actual_map);
-		translateMapInFile(actual_map, argv[1]);
+		save_map_file(actual_map, argv[1]);
 	}
 
 	if (!getwidth || !getheight)
@@ -527,7 +527,7 @@ int main(int argc, char* argv[])
 					first = m_case;
 				else
 					prev->next = m_case;
-				
+
 				prev = m_case;
 			}
 		}
