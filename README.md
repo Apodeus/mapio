@@ -18,8 +18,8 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 - ~~[A] `maputil.c` : Commande `--pruneobjects`~~ [Annulé]
 - ~~[A] `maputil.c` : Chargement complet du fichier sous forme de structures~~
 - ~~[A] `maputil.c` : Commande `--pruneobjects` en utilisant `load_map_file()`~~
-- [E] `maputil.c` : Commandes `--setwidth` et `--setheight` en utilisant `load_map_file()`
-- [E] `maputil.c` : Prise en charge de plusieurs commandes en une seule exécution
+- ~~[E] `maputil.c` : Commandes `--setwidth` et `--setheight` en utilisant `load_map_file()`~~
+- ~~[E] `maputil.c` : Prise en charge de plusieurs commandes en une seule exécution~~
 - [E] `maputil.c` : Commande `--setobjects`
 
 ###Deuxième Partie : Gestion des temporisateurs
@@ -35,8 +35,8 @@ Fonctionnalité                              | Difficulté | Etat
 ------------------------------------------- | --- | ---------------
 Sauvegarde                                  | +   | **Terminé**
 Chargement                                  | +   | **Terminé**
-Informations élémentaires                   | +   | Presque terminé
-Modification de la taille de la carte       | ++  | A optimiser
+Informations élémentaires                   | +   | **Terminé**
+Modification de la taille de la carte       | ++  | **Terminé**
 Remplacement des objets d'une carte         | +++ | *A faire*
 Suppression des objets inutilisés           | ++  | **Terminé**
 Réception des signaux par un thread daemon  | +   | *A faire*
