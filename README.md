@@ -11,14 +11,16 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 ##Répartition des tâches
 
 ###Première Partie : Sauvegarde et chargement des cartes
-- ~~[E] `map_save()` *Difficulté : +*~~
-- ~~[A] `map_load()` *Difficulté : +*~~
-- ~~[E] `maputil.c` : Commandes `--get` *Difficulté : +*~~
-- ~~[E] `maputil.c` : Commandes `--setwidth` et `--setheight` *Difficulté : ++*~~ [Annulé]
-- ~~[A] `maputil.c` : Commande `--pruneobjects` *Difficulté : ++*~~ [Annulé]
-- [A] `maputil.c` : Chargement complet du fichier sous forme de structures
+- ~~[E] `map_save()`~~
+- ~~[A] `map_load()`~~
+- ~~[E] `maputil.c` : Commandes `--get`~~
+- ~~[E] `maputil.c` : Commandes `--setwidth` et `--setheight`~~ [Annulé]
+- ~~[A] `maputil.c` : Commande `--pruneobjects`~~ [Annulé]
+- ~~[A] `maputil.c` : Chargement complet du fichier sous forme de structures~~
+- ~~[A] `maputil.c` : Commande `--pruneobjects` en utilisant `load_map_file()`~~
+- [E] `maputil.c` : Commandes `--setwidth` et `--setheight` en utilisant `load_map_file()`
 - [E] `maputil.c` : Prise en charge de plusieurs commandes en une seule exécution
-- [?] `maputil.c` : Commande `--setobjects` *Difficulté : +++*
+- [E] `maputil.c` : Commande `--setobjects`
 
 ###Deuxième Partie : Gestion des temporisateurs
 *A venir*
@@ -36,7 +38,7 @@ Chargement                                  | +   | **Terminé**
 Informations élémentaires                   | +   | Presque terminé
 Modification de la taille de la carte       | ++  | A optimiser
 Remplacement des objets d'une carte         | +++ | *A faire*
-Suppression des objets inutilisés           | ++  | A optimiser
+Suppression des objets inutilisés           | ++  | **Terminé**
 Réception des signaux par un thread daemon  | +   | *A faire*
 Implémentation simple                       | +   | *A faire*
 Implémentation complète                     | +++ | *A faire*
