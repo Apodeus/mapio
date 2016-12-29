@@ -98,6 +98,7 @@ map_info load_map_file(char* filename)
 	fgets(buffer, buff_size, file_save);
 	token = strtok(buffer, delim);
 	loading_map->width = atoi(token);
+
 	token = strtok(NULL, delim);
 	loading_map->height = atoi(token);
 
@@ -105,6 +106,7 @@ map_info load_map_file(char* filename)
 	fgets(buffer, buff_size, file_save);
 	token = strtok(buffer, delim);
 	loading_map->nb_element = atoi(token);
+
 	loading_map->first_case	= NULL;
 	map_object prev_object = NULL;
 
@@ -116,10 +118,13 @@ map_info load_map_file(char* filename)
 
 		token = strtok(buffer, delim);
 		new_object->x = atoi(token);
+
 		token = strtok(NULL, delim);
 		new_object->y = atoi(token);
+
 		token = strtok(NULL, delim);
 		new_object->type = atoi(token);
+
 		new_object->active = 1;
 		new_object->next = NULL;
 
@@ -176,6 +181,7 @@ map_info load_map_file(char* filename)
 
 		prev_property = new_property;
 	}
+	fclose(file_save);
 
 	return loading_map;
 }
@@ -185,21 +191,16 @@ int* find_new_id(int* check_tab, int nb_object)
 {
 	int* tab2 = (int*)malloc(sizeof(int) * nb_object);
 
-	int debug = 0;
-
 	for(int i = 0; i < nb_object; i++)
 		tab2[i] = 0;
-	
+
+	int nb_zero = 0;
 	for(int i = 0; i < nb_object; i++)
 	{
-		int nb_zero = 0;
-		for(int j = 0; j < i; j++)
-		{
-			if(check_tab[j] == 0)
-				nb_zero += 1;
-		}
+		if(check_tab[i] == 0)
+			nb_zero += 1;
 
-		if(check_tab[i] != 0)
+		else if(check_tab[i] != 0)
 			tab2[i] = i - nb_zero;
 	}
 
@@ -254,7 +255,7 @@ void command_pruneobjects(map_info saved_map){
 void save_map_file(map_info new_map, char* filename)
 {
 	FILE* new_file = fopen("tmp", "w");
-	char buffer[256];
+	char buffer[1024];
 
 	sprintf(buffer, "%d %d\n", new_map->width, new_map->height);
 	fputs(buffer, new_file);
@@ -298,6 +299,38 @@ void save_map_file(map_info new_map, char* filename)
 	rename("tmp", filename);
 }
 
+void free_map(map_info map){
+	if(map == NULL)
+		return;
+	if(map->filename != NULL)
+		free(map->filename);
+
+	while(map->first_case != NULL){
+		map_object tmp_obj = NULL;
+
+		if(map->first_case->next != NULL)
+			tmp_obj = map->first_case->next;
+
+		free(map->first_case);
+		map->first_case = tmp_obj;
+	}
+
+	while(map->first_property != NULL){
+		object_property tmp_property = NULL;
+
+		if(map->first_property->next != NULL)
+			tmp_property = map->first_property->next;
+
+		if(map->first_property->path != NULL)
+			free(map->first_property->path);
+
+		free(map->first_property);
+		map->first_property = tmp_property;
+	}
+
+	free(map);
+
+}
 
 int main(int argc, char* argv[])
 {
@@ -529,10 +562,15 @@ int main(int argc, char* argv[])
 	if(!pruneobjects)
 		command_pruneobjects(actual_map);
 
-	close(f);
-
 	if (!(setwidth * setheight * setobjects * pruneobjects))
 		save_map_file(actual_map, argv[1]);
+
+	printf("Liberation Memoire de la map\n");
+
+	close(f);
+	free_map(actual_map);
+
+	
 
 	return 0;
 }
