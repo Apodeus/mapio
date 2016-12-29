@@ -4,16 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct s_map_case
+struct s_map_object
 {
 	int x;
 	int y;
 	int type;
 
-	struct s_map_case* next;
+	struct s_map_object* next;
 };
 
-struct s_object
+struct s_object_property
 {
 	int lenght_path;
 	char* path;
@@ -23,7 +23,8 @@ struct s_object
 	int collectible;
 	int generator;
 	int active;
-	struct s_object* next;
+
+	struct s_object_property* next;
 };
 
 struct s_map_info
@@ -34,13 +35,13 @@ struct s_map_info
 	int nb_element;
 	int nb_object;
 
-	struct s_map_case* first_case;
-	struct s_object* first_object;
+	struct s_map_object* first_case;
+	struct s_object_property* first_object;
 };
 
-typedef struct s_map_case* map_case;
-typedef struct s_object* object;
-typedef struct s_map_info* map;
+typedef struct s_map_object* map_object;
+typedef struct s_object_property* object_property;
+typedef struct s_map_info* map_info;
 
 void skip_line(int file_id)
 {
@@ -65,6 +66,8 @@ void read_word(int file_id, char label[])
 		read(file_id, &c, sizeof(char));
 		printf("%c", c);
 	}
+
+	printf("\n");
 }
 
 int read_digit(int file_id)
@@ -74,11 +77,11 @@ int read_digit(int file_id)
 	return c - '0';
 }
 
-map convertFile(char* filename){
+map_info load_map_file(char* filename){
 	//Initialisation des trois structures
-	map_case first_case = (map_case)malloc(sizeof(struct s_map_case));
-	object first_object = (object)malloc(sizeof(struct s_object));
-	map loading_map = (map)malloc(sizeof(struct s_map_info));
+	map_object first_case = (map_object)malloc(sizeof(struct s_map_object));
+	object_property first_object = (object_property)malloc(sizeof(struct s_object_property));
+	map_info loading_map = (map_info)malloc(sizeof(struct s_map_info));
 	//On recopie le nom du fichier dans la map entrain de charger
 	loading_map->filename = (char*)malloc(sizeof(char) * strlen(filename));
 	strcpy(loading_map->filename, filename);
@@ -88,32 +91,32 @@ map convertFile(char* filename){
 
 	int buff_size = 256;
 	char buffer[buff_size];
-	char* tokken;
+	char* token;
 	char delim[2] = " ";
 
 	//On recupere la largeur et la hauteur
 	fgets(buffer, buff_size, file_save);
-	tokken = strtok(buffer, delim);
-	loading_map->width = atoi(tokken);
-	tokken = strtok(NULL, delim);
-	loading_map->height = atoi(tokken);
+	token = strtok(buffer, delim);
+	loading_map->width = atoi(token);
+	token = strtok(NULL, delim);
+	loading_map->height = atoi(token);
 
 	//On recupere le nombre d'élement, et on initialise la struture du premier element à NULL
 	fgets(buffer, buff_size, file_save);
-	tokken = strtok(buffer, delim);
-	loading_map->nb_element = atoi(tokken);
+	token = strtok(buffer, delim);
+	loading_map->nb_element = atoi(token);
 	loading_map->first_case	= NULL;
 
-	//Si il y a au moins un element, alors on rempli les structures map_case
+	//Si il y a au moins un element, alors on rempli les structures map_object
 	if(loading_map->nb_element > 0){
 
 		fgets(buffer, buff_size, file_save);
-		tokken = strtok(buffer, delim);
-		first_case->x = atoi(tokken);
-		tokken = strtok(NULL, delim);
-		first_case->y = atoi(tokken);
-		tokken = strtok(NULL, delim);
-		first_case->type = atoi(tokken);
+		token = strtok(buffer, delim);
+		first_case->x = atoi(token);
+		token = strtok(NULL, delim);
+		first_case->y = atoi(token);
+		token = strtok(NULL, delim);
+		first_case->type = atoi(token);
 
 		first_case->next = NULL;
 
@@ -122,15 +125,15 @@ map convertFile(char* filename){
 		for(int i = 0; i < loading_map->nb_element - 1; i++){
 			fgets(buffer, buff_size, file_save);
 
-			map_case actual_case = (map_case)malloc(sizeof(struct s_map_case));
+			map_object actual_case = (map_object)malloc(sizeof(struct s_map_object));
 			first_case->next = actual_case;
 
-			tokken = strtok(buffer, delim);
-			actual_case->x = atoi(tokken);
-			tokken = strtok(NULL, delim);
-			actual_case->y = atoi(tokken);
-			tokken = strtok(NULL, delim);
-			actual_case->type = atoi(tokken);
+			token = strtok(buffer, delim);
+			actual_case->x = atoi(token);
+			token = strtok(NULL, delim);
+			actual_case->y = atoi(token);
+			token = strtok(NULL, delim);
+			actual_case->type = atoi(token);
 			actual_case->next = NULL;
 			first_case = actual_case;
 
@@ -140,8 +143,8 @@ map convertFile(char* filename){
 
 	//On recupere le nombre d'objet
 	fgets(buffer, buff_size, file_save);
-	tokken = strtok(buffer, delim);
-	loading_map->nb_object = atoi(tokken);
+	token = strtok(buffer, delim);
+	loading_map->nb_object = atoi(token);
 
 	//Si il n'y a pas d'objet chargé, on fixe la structure first_object à NULL, et on retourne la structure de la map
 	if(loading_map->nb_object <= 0)
@@ -152,26 +155,26 @@ map convertFile(char* filename){
 
 	//On recupere les informations du premier objet
 	fgets(buffer, buff_size, file_save);
-	tokken = strtok(buffer, delim);
-	first_object->lenght_path = atoi(tokken);
+	token = strtok(buffer, delim);
+	first_object->lenght_path = atoi(token);
 
-	tokken = strtok(NULL, delim);
+	token = strtok(NULL, delim);
 	first_object->path = (char*) malloc(first_object->lenght_path * sizeof(char));
-	strcpy(first_object->path, tokken);
-	tokken = strtok(NULL, delim);
-	first_object->frames = atoi(tokken);
+	strcpy(first_object->path, token);
+	token = strtok(NULL, delim);
+	first_object->frames = atoi(token);
 
-	tokken = strtok(NULL, delim);
-	first_object->solidity = atoi(tokken);
+	token = strtok(NULL, delim);
+	first_object->solidity = atoi(token);
 
-	tokken = strtok(NULL, delim);
-	first_object->destructible = atoi(tokken);
+	token = strtok(NULL, delim);
+	first_object->destructible = atoi(token);
 
-	tokken = strtok(NULL, delim);
-	first_object->collectible = atoi(tokken);
+	token = strtok(NULL, delim);
+	first_object->collectible = atoi(token);
 
-	tokken = strtok(NULL, delim);
-	first_object->generator = atoi(tokken);
+	token = strtok(NULL, delim);
+	first_object->generator = atoi(token);
 
 	first_object->active = 1;
 
@@ -184,29 +187,29 @@ map convertFile(char* filename){
 	for(int i = 0; i < loading_map->nb_object - 1; i++){
 
 		fgets(buffer, buff_size, file_save);
-		object actual_object = (object)malloc(sizeof(struct s_object));
+		object_property actual_object = (object_property)malloc(sizeof(struct s_object_property));
 
-		tokken = strtok(buffer, delim);
-		actual_object->lenght_path = atoi(tokken);
+		token = strtok(buffer, delim);
+		actual_object->lenght_path = atoi(token);
 
-		tokken = strtok(NULL, delim);
+		token = strtok(NULL, delim);
 		actual_object->path = (char*) malloc(actual_object->lenght_path * sizeof(char));
-		strcpy(actual_object->path, tokken);
+		strcpy(actual_object->path, token);
 
-		tokken = strtok(NULL, delim);
-		actual_object->frames = atoi(tokken);
+		token = strtok(NULL, delim);
+		actual_object->frames = atoi(token);
 
-		tokken = strtok(NULL, delim);
-		actual_object->solidity = atoi(tokken);
+		token = strtok(NULL, delim);
+		actual_object->solidity = atoi(token);
 
-		tokken = strtok(NULL, delim);
-		actual_object->destructible = atoi(tokken);
+		token = strtok(NULL, delim);
+		actual_object->destructible = atoi(token);
 
-		tokken = strtok(NULL, delim);
-		actual_object->collectible = atoi(tokken);
+		token = strtok(NULL, delim);
+		actual_object->collectible = atoi(token);
 
-		tokken = strtok(NULL, delim);
-		actual_object->generator = atoi(tokken);
+		token = strtok(NULL, delim);
+		actual_object->generator = atoi(token);
 
 		actual_object->active = 1;
 
@@ -243,14 +246,14 @@ int* findNewId(int* checkTab, int nb_object){
 }
 
 //Enleve les objets non utilisés
-void pruneobjects(map saved_map){
+void pruneobjects(map_info saved_map){
 	int nb_element = saved_map->nb_element;
 	int nb_object = saved_map->nb_object;
 	int checkObject[nb_object];
 	for(int i = 0; i < nb_object; i++)
 		checkObject[i] = 0;
 
-	map_case actual_case = saved_map->first_case;
+	map_object actual_case = saved_map->first_case;
 	while(actual_case != NULL){
 		checkObject[actual_case->type] = 1;
 		actual_case = actual_case->next;
@@ -265,7 +268,7 @@ void pruneobjects(map saved_map){
 		actual_case = actual_case->next;
 	}
 
-	object actual_object = saved_map->first_object;
+	object_property actual_object = saved_map->first_object;
 
 	int i = 0;
 	int new_nb_object = 0;
@@ -283,7 +286,7 @@ void pruneobjects(map saved_map){
 }
 
 //Convertit la structure map en un fichier de sauvegarde 
-void translateMapInFile(map new_map, char* filename){
+void translateMapInFile(map_info new_map, char* filename){
 	remove(filename);
 	FILE* new_file = fopen(filename, "w");
 	char buffer[256];
@@ -293,7 +296,7 @@ void translateMapInFile(map new_map, char* filename){
 	sprintf(buffer, "%d\n", new_map->nb_element);
 	fputs(buffer, new_file);
 
-	map_case actual_case = new_map->first_case;
+	map_object actual_case = new_map->first_case;
 	while(actual_case != NULL){
 		sprintf(buffer, "%d %d %d\n", actual_case->x, actual_case->y, actual_case->type);
 		fputs(buffer, new_file);
@@ -303,7 +306,7 @@ void translateMapInFile(map new_map, char* filename){
 	sprintf(buffer, "%d\n", new_map->nb_object);
 	fputs(buffer, new_file);
 
-	object actual_object = new_map->first_object;
+	object_property actual_object = new_map->first_object;
 	while(actual_object != NULL){
 		if(actual_object->active == 1){
 			sprintf(buffer, "%d %s %d %d %d %d %d\n", 
@@ -341,7 +344,7 @@ int main(int argc, char* argv[])
 	}
 
 	int f = open(argv[1], O_RDONLY);
-	map actual_map = convertFile(argv[1]);
+	map_info actual_map = load_map_file(argv[1]);
 	// printf("name: %s\nwidth: %d\nheight: %d\nnb_elem: %d\nnb_object: %d\n", 
 	// 	actual_map->filename, actual_map->width, actual_map->height, actual_map->nb_element, actual_map->nb_object);
 	if (f == -1)
@@ -497,8 +500,8 @@ int main(int argc, char* argv[])
 			read(f, &c, sizeof(char));
 		}
 
-		map_case prev = NULL;
-		map_case first = NULL;
+		map_object prev = NULL;
+		map_object first = NULL;
 		int nb_objects = 0;
 		for (int i = 0; i < num_object; i++)
 		{
@@ -530,7 +533,7 @@ int main(int argc, char* argv[])
 			{
 				nb_objects++;
 
-				map_case m_case = (map_case)malloc(sizeof(struct s_map_case));
+				map_object m_case = (map_object)malloc(sizeof(struct s_map_object));
 				m_case->x = pos_x;
 				m_case->y = pos_y + (value_height - height);
 				m_case->type = type;
@@ -547,7 +550,7 @@ int main(int argc, char* argv[])
 		//int new_file = open("tmp", O_WRONLY);
 		FILE* new_file = fopen("tmp", "w");
 		fprintf(new_file, "%d %d\n%d\n", value_width, value_height, nb_objects);
-		map_case m_case = first;
+		map_object m_case = first;
 		while (m_case != NULL)
 		{
 			first = m_case;
