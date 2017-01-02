@@ -261,11 +261,20 @@ void save_map_file(map_info new_map, char* filename)
 	fputs(buffer, new_file);
 
 	int i = 0;
-	map_object o = new_map->first_case;
+	map_object current_object = new_map->first_case;
+	new_map->nb_element = 0;
+	while (current_object != NULL)
+	{
+		if (current_object->active)
+			new_map->nb_element++;
+
+		current_object = current_object->next;
+	}
+
 	sprintf(buffer, "%d\n", new_map->nb_element);
 	fputs(buffer, new_file);
 
-	map_object current_object = new_map->first_case;
+	current_object = new_map->first_case;
 	while(current_object != NULL)
 	{
 		if (current_object->active)
@@ -667,11 +676,6 @@ int main(int argc, char* argv[])
 
 		actual_map->width = value_width;
 		actual_map->height = value_height;
-	}
-
-	if (!setobjects)
-	{
-		//...
 	}
 
 	if(!pruneobjects)
