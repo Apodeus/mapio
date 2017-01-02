@@ -300,16 +300,14 @@ void save_map_file(map_info new_map, char* filename)
 }
 
 void free_map(map_info map){
-	fprintf(stderr, "Fine\n");
 	if(map == NULL)
 		return;
-	fprintf(stderr, "Fine\n");
 
 	if(map->filename != NULL)
 		free(map->filename);
-	fprintf(stderr, "Fine\n");
 
-	while(map->first_case != NULL){
+	while(map->first_case != NULL)
+	{
 		map_object tmp_obj = NULL;
 
 		if(map->first_case->next != NULL)
@@ -318,35 +316,22 @@ void free_map(map_info map){
 		free(map->first_case);
 		map->first_case = tmp_obj;
 	}
-	fprintf(stderr, "Fine\n");
 
-	while(map->first_property != NULL){
-	fprintf(stderr, "Fine2\n");
-
+	while(map->first_property != NULL)
+	{
 		object_property tmp_property = NULL;
-
 		if(map->first_property->next != NULL)
 			tmp_property = map->first_property->next;
-	fprintf(stderr, "Fine3\n");
 
 		if(map->first_property->path != NULL)
-		{
-	fprintf(stderr, "Fine3.5, path = %s\n", map->first_property->path);
-
 			free(map->first_property->path);
-		}
-	fprintf(stderr, "Fine4\n");
 
 		free(map->first_property);
-	fprintf(stderr, "Fine5\n");
 
 		map->first_property = tmp_property;
 	}
-	fprintf(stderr, "Fine\n");
 
 	free(map);
-	fprintf(stderr, "Fine\n");
-
 }
 
 int main(int argc, char* argv[])
@@ -694,8 +679,6 @@ int main(int argc, char* argv[])
 
 	if (!(setwidth * setheight * setobjects * pruneobjects))
 		save_map_file(actual_map, argv[1]);
-
-	fprintf(stderr, "Liberation Memoire de la map\n");
 
 	close(f);
 	free_map(actual_map);
