@@ -341,12 +341,13 @@ int main(int argc, char* argv[])
 	}
 
 	int f = open(argv[1], O_RDONLY);
-	map_info actual_map = load_map_file(argv[1]);
 	if (f == -1)
 	{
 		fprintf(stderr, "%s %s %s\n", "File", argv[1], "does not exist.");
 		return 1;
 	}
+
+	map_info actual_map = load_map_file(argv[1]);
 
 	int getwidth = 1;
 	int getheight = 1;
@@ -359,6 +360,7 @@ int main(int argc, char* argv[])
 
 	for (int i = 2; i < argc; i++)
 	{
+
 		if (!strcmp(argv[i], "--getwidth"))
 			getwidth = 0;
 
@@ -380,9 +382,10 @@ int main(int argc, char* argv[])
 				return 1;
 			}
 
-			if (!atoi(argv[i]))
+			int value = atoi(argv[i]);
+			if (value <= 0)
 			{
-				fprintf(stderr, "Value for %s must be an integer greather or equal to 1.\n", argv[i - 1]);
+				fprintf(stderr, "Value for %s must be an integer greather or equal to 1 (got %d).\n", argv[i - 1], value);
 				return 1;
 			}
 
@@ -394,7 +397,117 @@ int main(int argc, char* argv[])
 
 		if (!strcmp(argv[i], "--setobjects"))
 		{
-			//...
+			setobjects = 0;
+			object_property first_property = NULL;
+			object_property prev_property = NULL;
+			int check = 1;
+			while (check)
+			{
+				check = 0;
+
+				i++;
+				int p = open(argv[i], O_RDONLY);
+				if (p == -1)
+				{
+					fprintf(stderr, "File %s does not exist\n", argv[i]);
+					return 1;
+				}
+				char* path = argv[i];
+				close(p);
+
+				i++;
+				int nb_frames = atoi(argv[i]);
+				if (nb_frames <= 0)
+				{
+					fprintf(stderr, "Value for <nb_frames> must be an integer greather or equal to 1 (got %d).\n", nb_frames);
+					return 1;
+				}
+
+				i++;
+				int solidity = -1;
+				if (!strcmp(argv[i], "air"))
+					solidity = 0;
+				if (!strcmp(argv[i], "semi-solid"))
+					solidity = 1;
+				if (!strcmp(argv[i], "solid"))
+					solidity = 2;
+				if (solidity == -1)
+				{
+					fprintf(stderr, "Value for <solidity> must be 'air', 'semi-solid' or 'solid' (got %s).\n", argv[i]);
+					return 1;
+				}
+
+				i++;
+				int is_destructible = -1;
+				if (!strcmp(argv[i], "not-destructible"))
+					is_destructible = 0;
+				if (!strcmp(argv[i], "destructible"))
+					is_destructible = 1;
+				if (is_destructible == -1)
+				{
+					fprintf(stderr, "Value for <destructible> must be 'destructible' or 'not-destructible' (got %s).\n", argv[i]);
+					return 1;
+				}
+
+				i++;
+				int is_collectible = -1;
+				if (!strcmp(argv[i], "not-collectible"))
+					is_collectible = 0;
+				if (!strcmp(argv[i], "collectible"))
+					is_collectible = 1;
+				if (is_collectible == -1)
+				{
+					fprintf(stderr, "Value for <collectible> must be 'collectible' or 'not-collectible' (got %s).\n", argv[i]);
+					return 1;
+				}
+
+				i++;
+				int is_generator = -1;
+				if (!strcmp(argv[i], "not-generator"))
+					is_generator = 0;
+				if (!strcmp(argv[i], "generator"))
+					is_generator = 1;
+				if (is_generator == -1)
+				{
+					fprintf(stderr, "Value for <generator> must be 'generator' or 'not-generator' (got %s).\n", argv[i]);
+					return 1;
+				}
+
+				object_property current_property = (object_property) malloc(sizeof(struct s_object_property));
+				current_property->lenght_path = strlen(path);
+				current_property->path = (char*) malloc(sizeof(char) * current_property->lenght_path);
+				current_property->path = path;
+				current_property->frames = nb_frames;
+				current_property->solidity = solidity;
+				current_property->destructible = is_destructible;
+				current_property->collectible = is_collectible;
+				current_property->generator = is_generator;
+				current_property->active = 1;
+				current_property->next = NULL;
+				if (first_property == NULL)
+					first_property = current_property;
+				else
+					prev_property->next = current_property;
+				prev_property = current_property;
+
+				if (i + 1 < argc)
+					check = 1;
+			}
+
+			while(actual_map->first_property != NULL){
+				object_property tmp_property = NULL;
+
+				if(actual_map->first_property->next != NULL)
+					tmp_property = actual_map->first_property->next;
+
+				if(actual_map->first_property->path != NULL)
+					free(actual_map->first_property->path);
+
+				free(actual_map->first_property);
+				actual_map->first_property = tmp_property;
+			}
+
+			actual_map->first_property = first_property;
 		}
 
 		if (!strcmp(argv[i], "--pruneobjects"))
@@ -565,7 +678,7 @@ int main(int argc, char* argv[])
 	if (!(setwidth * setheight * setobjects * pruneobjects))
 		save_map_file(actual_map, argv[1]);
 
-	printf("Liberation Memoire de la map\n");
+	fprintf(stderr, "Liberation Memoire de la map\n");
 
 	close(f);
 	free_map(actual_map);
