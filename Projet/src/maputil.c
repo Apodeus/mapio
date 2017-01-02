@@ -300,10 +300,14 @@ void save_map_file(map_info new_map, char* filename)
 }
 
 void free_map(map_info map){
+	fprintf(stderr, "Fine\n");
 	if(map == NULL)
 		return;
+	fprintf(stderr, "Fine\n");
+
 	if(map->filename != NULL)
 		free(map->filename);
+	fprintf(stderr, "Fine\n");
 
 	while(map->first_case != NULL){
 		map_object tmp_obj = NULL;
@@ -314,21 +318,34 @@ void free_map(map_info map){
 		free(map->first_case);
 		map->first_case = tmp_obj;
 	}
+	fprintf(stderr, "Fine\n");
 
 	while(map->first_property != NULL){
+	fprintf(stderr, "Fine2\n");
+
 		object_property tmp_property = NULL;
 
 		if(map->first_property->next != NULL)
 			tmp_property = map->first_property->next;
+	fprintf(stderr, "Fine3\n");
 
 		if(map->first_property->path != NULL)
+		{
+	fprintf(stderr, "Fine3.5, path = %s\n", map->first_property->path);
+
 			free(map->first_property->path);
+		}
+	fprintf(stderr, "Fine4\n");
 
 		free(map->first_property);
+	fprintf(stderr, "Fine5\n");
+
 		map->first_property = tmp_property;
 	}
+	fprintf(stderr, "Fine\n");
 
 	free(map);
+	fprintf(stderr, "Fine\n");
 
 }
 
@@ -476,7 +493,7 @@ int main(int argc, char* argv[])
 				object_property current_property = (object_property) malloc(sizeof(struct s_object_property));
 				current_property->lenght_path = strlen(path);
 				current_property->path = (char*) malloc(sizeof(char) * current_property->lenght_path);
-				current_property->path = path;
+				strcpy(current_property->path, path);
 				current_property->frames = nb_frames;
 				current_property->solidity = solidity;
 				current_property->destructible = is_destructible;
