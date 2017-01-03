@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE 600
+
 #include <SDL.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -24,14 +26,25 @@ static unsigned long get_time (void)
 
 #ifdef PADAWAN
 
-void* daemon()
+void handler()
+{
+	fprintf(stderr, "%ld\n", pthread_self());
+}
+
+void daemon()
 {
 	sigset_t set;
-	sigemptyset(&set);
-	sigaddset(&set, SIGALRM);
+	sigfillset(&set);
+	sigdelset(&set, SIGALRM);
+
+	struct sigaction sa;
+	sa.sa_handler = handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
 	while(1)
 	{
 		fprintf(stderr, "Running...\n");
+		sigaction(SIGALRM, &sa, NULL);
 		sigsuspend(&set);
 		fprintf(stderr, "___");
 	}
@@ -41,7 +54,7 @@ void* daemon()
 int timer_init (void)
 {
 	pthread_t d;
-	pthread_create(&d, NULL, daemon, NULL);
+	pthread_create(&d, NULL, &daemon, NULL);
 	return 0; // Implementation not ready
 }
 
