@@ -10,7 +10,7 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 
 ##Répartition des tâches
 
-###Première Partie : Sauvegarde et chargement des cartes
+###Première Partie : Sauvegarde et chargement des cartes 
 - ~~[E] `map_save()`~~
 - ~~[A] `map_load()`~~
 - ~~[E] `maputil.c` : Commandes `--get`~~
@@ -24,11 +24,11 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 
 ###Deuxième Partie : Gestion des temporisateurs
 - ~~[E] `tempo.c` : Mise en place du daemon~~
+- ~~[E] `tempo.c` : Implémentation basique des timers~~
 
-##TODOs
-- `map_save()` et `map_load()` : utiliser des fonctions bas niveau plutôt que les `fopen()`, etc...
-- ~~`maputil` : rendre possible l'utilisation de plusieurs commandes en une seule ligne~~ [Planifié]
-- ~~`maputil` : vérifier le fichier utilisé avant de le manipuler~~ [Planifié]
+###Rapport
+- [A] Première partie dans l'ensemble
+- [E] Détails sur le parsing des arguments
 
 ##Checklist
 Fonctionnalité                              | Difficulté | Etat
@@ -40,7 +40,7 @@ Modification de la taille de la carte       | ++  | **Terminé**
 Remplacement des objets d'une carte         | +++ | **Terminé**
 Suppression des objets inutilisés           | ++  | **Terminé**
 Réception des signaux par un thread daemon  | +   | **Terminé**
-Implémentation simple                       | +   | *A faire*
+Implémentation simple                       | +   | **Terminé**
 Implémentation complète                     | +++ | *A faire*
 Mise en service dans le jeu                 | ++  | *A faire*
 
