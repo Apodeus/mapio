@@ -23,7 +23,7 @@ Soutenances : **Mardi 10 et Mercredi 11 Janvier**
 - ~~[E] `maputil.c` : Commande `--setobjects`~~
 
 ###Deuxième Partie : Gestion des temporisateurs
-*A venir*
+- ~~[E] `tempo.c` : Mise en place du daemon~~
 
 ##TODOs
 - `map_save()` et `map_load()` : utiliser des fonctions bas niveau plutôt que les `fopen()`, etc...
@@ -39,7 +39,7 @@ Informations élémentaires                   | +   | **Terminé**
 Modification de la taille de la carte       | ++  | **Terminé**
 Remplacement des objets d'une carte         | +++ | **Terminé**
 Suppression des objets inutilisés           | ++  | **Terminé**
-Réception des signaux par un thread daemon  | +   | *A faire*
+Réception des signaux par un thread daemon  | +   | **Terminé**
 Implémentation simple                       | +   | *A faire*
 Implémentation complète                     | +++ | *A faire*
 Mise en service dans le jeu                 | ++  | *A faire*
