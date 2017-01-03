@@ -26,9 +26,14 @@ static unsigned long get_time (void)
 
 #ifdef PADAWAN
 
+void* param_event;
+
 void handler()
 {
-	fprintf(stderr, "%ld\n", pthread_self());
+	//fprintf(stderr, "%ld\n", pthread_self());
+	printf("sdl_push_event(%p) appelée au temps %ld\n", param_event, get_time());
+	//int i = 17;
+	//timer_set(300, i);
 }
 
 void daemon()
@@ -54,13 +59,19 @@ void daemon()
 int timer_init (void)
 {
 	pthread_t d;
-	pthread_create(&d, NULL, &daemon, NULL);
+	pthread_create(&d, NULL, (void*) &daemon, NULL);
 	return 0; // Implementation not ready
 }
 
 void timer_set (Uint32 delay, void *param)
 {
-	// TODO
+	struct itimerval timer;
+	param_event = param;
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_usec = 0;
+	timer.it_value.tv_sec = delay / 100;
+	timer.it_value.tv_usec = 0;
+	fprintf(stderr, "%d\n",setitimer(ITIMER_REAL, &timer, NULL));
 }
 
 #endif
