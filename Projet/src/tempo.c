@@ -124,6 +124,7 @@ void timer_set (Uint32 delay, void *param)
 	timer.it_interval.tv_usec = 0;
 	timer.it_value.tv_sec = (root_event->done_time - get_time()) / 1000000;
 	timer.it_value.tv_usec = ((root_event->done_time - get_time()) % 1000000);
+	setitimer(ITIMER_REAL, &timer, NULL);
 	pthread_mutex_unlock(&lock);
 }
 
