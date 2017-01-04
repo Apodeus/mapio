@@ -51,22 +51,13 @@ void add_new_event(event e)
 	}
 
 	if (root_event == NULL)
-	{
-		fprintf(stderr, "root found null\n");
 		root_event = e;
-	}
 
 	if (prev_event != NULL)
-	{
-		fprintf(stderr, "%s\n", "prev not null");
 		prev_event->next = e;
-	}
 	
 	if (current_event != NULL)
-	{
-		fprintf(stderr, "%s\n", "current not null");
 		e->next = current_event;
-	}
 }
 
 void handler()
@@ -75,23 +66,16 @@ void handler()
 	unsigned long date = root_event->done_time;
 	while(root_event != NULL && root_event->done_time == date)
 	{
-		fprintf(stderr, "sdl_push_event(%p) appelée au temps %ld\n", root_event->param_event, get_time());
 		sdl_push_event(root_event->param_event);
-		fprintf(stderr, "Done.\n");
 		event prev_event = root_event;
-		fprintf(stderr, "prev_event created\n");
 		if (root_event->next != NULL)
 			root_event = root_event->next;
 		else
 			root_event = NULL;
-		fprintf(stderr, "root moved forward\n");
 		free(prev_event);
-		fprintf(stderr, "Free done.\n");
 	}
 
-	fprintf(stderr, "%s\n", "unlocking...");
 	pthread_mutex_unlock(&lock);
-	fprintf(stderr, "%s\n", "unlocked");
 }
 
 void daemon()
@@ -106,10 +90,8 @@ void daemon()
 	sa.sa_flags = 0;
 	while(1)
 	{
-		fprintf(stderr, "Running...\n");
 		sigaction(SIGALRM, &sa, NULL);
 		sigsuspend(&set);
-		fprintf(stderr, "___");
 	}
 }
 
@@ -135,25 +117,13 @@ void timer_set (Uint32 delay, void *param)
 	e->done_time = get_time() + delay * 1000;
 	e->timer = delay;
 	e->next = NULL;
-	fprintf(stderr, "Event fait avec delay=%u.\n", delay);
 	add_new_event(e);
-	fprintf(stderr, "Event placé, liste :\n");
-	event current_event = root_event;
-	while(current_event != NULL && current_event->next != NULL)
-	{
-		fprintf(stderr, " done_time : %lu;\n", current_event->done_time);
-		current_event = current_event->next;
-	}
-	if (current_event == NULL)
-		fprintf(stderr, "%s\n", "<null>");
-	fprintf(stderr, "%s\n", "C'est tout");
+	
 	struct itimerval timer;
 	timer.it_interval.tv_sec = 0;
 	timer.it_interval.tv_usec = 0;
 	timer.it_value.tv_sec = (root_event->done_time - get_time()) / 1000000;
 	timer.it_value.tv_usec = ((root_event->done_time - get_time()) % 1000000);
-	fprintf(stderr, "Fixation du timer pour dans %ld s %ld us\n", timer.it_value.tv_sec, timer.it_value.tv_usec);
-	fprintf(stderr, "%d\n",setitimer(ITIMER_REAL, &timer, NULL));
 	pthread_mutex_unlock(&lock);
 }
 
