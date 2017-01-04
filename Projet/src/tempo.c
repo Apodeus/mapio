@@ -62,9 +62,10 @@ void add_new_event(event e)
 
 void handler()
 {
+	fprintf(stderr, "%ld\n", pthread_self());
 	pthread_mutex_lock(&lock);
 	unsigned long date = root_event->done_time;
-	while(root_event != NULL && root_event->done_time == date)
+	while(root_event != NULL && root_event->done_time/100 == date/100)
 	{
 		sdl_push_event(root_event->param_event);
 		event prev_event = root_event;
@@ -72,6 +73,7 @@ void handler()
 			root_event = root_event->next;
 		else
 			root_event = NULL;
+		
 		free(prev_event);
 	}
 
@@ -80,6 +82,8 @@ void handler()
 
 void daemon()
 {
+	fprintf(stderr, "%ld\n", pthread_self());
+
 	sigset_t set;
 	sigfillset(&set);
 	sigdelset(&set, SIGALRM);
@@ -98,6 +102,8 @@ void daemon()
 // timer_init returns 1 if timers are fully implemented, 0 otherwise
 int timer_init (void)
 {
+	fprintf(stderr, "%ld\n", pthread_self());
+
 	pthread_t d;
 	//lock = PTHREAD_MUTEX_INITIALIZER;
 	root_event = NULL;
