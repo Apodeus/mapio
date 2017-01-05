@@ -336,7 +336,6 @@ void free_map(map_info map){
 			free(map->first_property->path);
 
 		free(map->first_property);
-
 		map->first_property = tmp_property;
 	}
 
