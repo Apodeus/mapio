@@ -40,6 +40,14 @@ typedef struct s_event* event;
 event root_event;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
+
+unsigned long max(unsigned long a, unsigned long b)
+{
+	if (a > b)
+		return a;
+	return b;
+}
+
 void add_new_event(event e)
 {
 	event prev_event = NULL;
@@ -53,11 +61,26 @@ void add_new_event(event e)
 	if (root_event == NULL)
 		root_event = e;
 
-	if (prev_event != NULL)
-		prev_event->next = e;
 	
-	if (current_event != NULL)
-		e->next = current_event;
+	
+	if (current_event != NULL )
+	{
+		if (e->done_time > current_event->done_time)
+		{
+			current_event->next = e;
+		}
+		else 
+		{
+			e->next = current_event;
+			if (prev_event != NULL)
+			{
+				prev_event->next = e;
+			}else{
+				root_event = e;
+			}
+		}
+	}
+
 }
 
 void handler()
@@ -65,7 +88,7 @@ void handler()
 	//fprintf(stderr, "%ld\n", pthread_self());
 	pthread_mutex_lock(&lock);
 	unsigned long date = root_event->done_time;
-	while(root_event != NULL && root_event->done_time/100 == date/100)
+	while(root_event != NULL && root_event->done_time/1000 == date/1000)
 	{
 		sdl_push_event(root_event->param_event);
 		event prev_event = root_event;
@@ -76,6 +99,16 @@ void handler()
 		
 		free(prev_event);
 	}
+		if (root_event != NULL)
+		{
+			struct itimerval timer;
+			timer.it_interval.tv_sec = 0;
+			timer.it_interval.tv_usec = 0;
+			unsigned long t = max(0, root_event->done_time);
+			timer.it_value.tv_sec = (t - get_time()) / 1000000;
+			timer.it_value.tv_usec = ((t - get_time()) % 1000000);
+			setitimer(ITIMER_REAL, &timer, NULL);
+		}
 
 	pthread_mutex_unlock(&lock);
 }
@@ -108,6 +141,7 @@ int timer_init (void)
 	return 1;
 }
 
+
 void timer_set (Uint32 delay, void *param)
 {
 	pthread_mutex_lock(&lock);
@@ -121,9 +155,10 @@ void timer_set (Uint32 delay, void *param)
 	struct itimerval timer;
 	timer.it_interval.tv_sec = 0;
 	timer.it_interval.tv_usec = 0;
-	timer.it_value.tv_sec = (root_event->done_time - get_time()) / 1000000;
-	timer.it_value.tv_usec = ((root_event->done_time - get_time()) % 1000000);
-	setitimer(ITIMER_REAL, &timer, NULL);
+	unsigned long t = max(0, root_event->done_time);
+			timer.it_value.tv_sec = (t - get_time()) / 1000000;
+			timer.it_value.tv_usec = ((t - get_time()) % 1000000);
+			setitimer(ITIMER_REAL, &timer, NULL);
 	pthread_mutex_unlock(&lock);
 }
 

@@ -411,6 +411,7 @@ int main(int argc, char* argv[])
 			object_property first_property = NULL;
 			object_property prev_property = NULL;
 			int check = 1;
+			int n = 0;
 			while (check)
 			{
 				check = 0;
@@ -502,8 +503,9 @@ int main(int argc, char* argv[])
 
 				if (i + 1 < argc)
 					check = 1;
+				n++;
 			}
-
+			actual_map->nb_object = n;
 			while(actual_map->first_property != NULL){
 				object_property tmp_property = NULL;
 

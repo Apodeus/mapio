@@ -210,8 +210,7 @@ void map_load (char *filename)
 		tokken = strtok(NULL, delim);
 		// printf("id : %s\n", tokken);
 		id = atoi(tokken);
-		
-		map_set(x, y, id);
+			map_set(x, y, id);
 
 	}
 
@@ -248,9 +247,9 @@ void map_load (char *filename)
 		tokken = strtok(NULL, delim);
 		gener = atoi(tokken);
 
+		fprintf(stderr, "a\n");
 		map_object_add(path, nb_frames, isSolid(solid) | isDestructible(destruct) | isCollectible(coll) | isGenerator(gener));
 	}
-
 	map_object_end();
 
 	fclose(file_save);
