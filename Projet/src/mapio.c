@@ -227,7 +227,7 @@ void map_load (char *filename)
 	while(fgets ( buffer, buff_size, file_save ) != NULL ){
 		tokken = strtok(buffer, delim);
 
-		char path[ atoi(tokken) ];
+		char* path = (char*)malloc(sizeof(char) *  atoi(tokken) );
 		tokken = strtok(NULL, delim);	
 		strcpy(path, tokken);
 
@@ -247,8 +247,9 @@ void map_load (char *filename)
 		tokken = strtok(NULL, delim);
 		gener = atoi(tokken);
 
-		fprintf(stderr, "a\n");
+		// fprintf(stderr, "a\n");
 		map_object_add(path, nb_frames, isSolid(solid) | isDestructible(destruct) | isCollectible(coll) | isGenerator(gener));
+		free(path);
 	}
 	map_object_end();
 
